@@ -1,0 +1,30 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cython-tools"
+version = "1.0.0"
+description = "Cython developer tools"
+readme = "README.md"
+authors = [{ name = "Alex Veden", email = "i@alexveden.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["feed", "reader", "tutorial"]
+dependencies = [
+    "cython < 3.0.0",
+]
+requires-python = ">=3.6"
+
+[project.optional-dependencies]
+dev = ["bumpver", "pip-tools", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/alexveden/reader"
+
+[project.scripts]
+realpython = "reader.__main__:main"
