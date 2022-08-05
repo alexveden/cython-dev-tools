@@ -15,7 +15,7 @@ RE_FILE_BP_TEST = re.compile(r'.*[\\\/]tests[\/\\].*\.p[y|yx|xd]+$', re.MULTILIN
 
 def make_boilerplate(project_root, boiler_plate_name, include_class=None, include_module=None, include_tests=None):
     boiler_plate_root = 'bp_cython'
-    boiler_plate_package_source = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'boilerplate_package', boiler_plate_root))
+    boiler_plate_package_source = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '_boilerplate_package', boiler_plate_root))
 
     assert os.path.exists(boiler_plate_package_source), f'boiler_plate_package_source path does not exist: {boiler_plate_package_source}'
     assert os.path.exists(project_root), f'project root does not exist: {project_root}'

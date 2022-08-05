@@ -4,7 +4,7 @@ import shutil
 
 
 def make_samples(project_root):
-    sample_project_dir = 'cy_tools_samples'
+    sample_project_dir = '_cy_tools_samples'
     samples_project_source = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', sample_project_dir)
 
     assert os.path.exists(samples_project_source), f'samples_project_source path does not exist: {samples_project_source}'

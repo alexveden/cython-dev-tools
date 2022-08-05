@@ -64,7 +64,7 @@ def initialize(project_root: str,
         else:
             shutil.rmtree(cy_tools_dir_path)
 
-    boiler_plate_dir = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'boilerplate_package'))
+    boiler_plate_dir = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '_boilerplate_package'))
 
     shutil.copy(os.path.join(boiler_plate_dir, 'setup.py'),
                 os.path.join(project_root, 'setup.py'))

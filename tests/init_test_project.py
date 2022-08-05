@@ -17,7 +17,7 @@ if __name__ == '__main__':
                boilerplate_name='cytoolzz',
                )
 
-    shutil.copy(os.path.join('..', 'src', 'cython_tools', 'boilerplate_package', 'cytools_script.py'),
+    shutil.copy(os.path.join('..', 'src', 'cython_tools', '_boilerplate_package', 'cytools_script.py'),
                 os.path.join(proj_root, 'cytool'))
 
     subprocess.call(['chmod', '+x', os.path.join(proj_root, 'cytool')])
