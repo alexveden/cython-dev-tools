@@ -17,6 +17,9 @@ classifiers = [
 keywords = ["feed", "reader", "tutorial"]
 dependencies = [
     "cython < 3.0.0",
+    "numpy",
+    "pytest",
+    "coverage",
 ]
 requires-python = ">=3.6"
 

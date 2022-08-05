@@ -228,3 +228,4 @@ dmypy.json
 cython_debug/
 
 /experiments/
+/tests/init_project/
