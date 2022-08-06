@@ -1,12 +1,13 @@
 import os
 import shutil
 import sys
-from cython_tools.common import check_project_initialized
+from cython_tools.common import check_project_initialized, open_url_in_browser
 from cython_tools.logs import log
 import cython_tools.building
 import glob
 from unittest import mock
 import xml.etree.ElementTree as ET
+from datetime import datetime
 
 
 def coverage_command(args):
@@ -15,10 +16,14 @@ def coverage_command(args):
     """
     log.setup('cython_tools__coverage', verbosity=args.verbose)
 
-    coverage(tests_target=args.tests_target,
+    coverage_rep_url = coverage(tests_target=args.tests_target,
              project_root=args.project_root,
              coverage_engine=args.coverage_engine,
              )
+    if args.browser:
+        open_url_in_browser(f'file://{coverage_rep_url}')
+    else:
+        print(f'file://{coverage_rep_url}')
 
 
 def coverage(tests_target: str = '.',
@@ -75,31 +80,34 @@ plugins = Cython.Coverage
 
     coverage_main(['run', f'--data-file={cy_tools_coverage_data}', f'--rcfile={cy_tools_coverage_rc}', '-m', coverage_engine, tests_target])
 
-    # Step 4: generate XML file based on those tests
-    # IMPORTANT: Add -i (to ignore coverage errors) (without -i cython full coverage report may silently fail, if any issue in one file)
-    log.trace(f'Producing XML file: {cy_tools_coverage_xml}')
-    coverage_main(['xml', f'--data-file={cy_tools_coverage_data}', f'--rcfile={cy_tools_coverage_rc}', '-i', '-o', cy_tools_coverage_xml])
+    # # Step 4: generate XML file based on those tests
+    # # IMPORTANT: Add -i (to ignore coverage errors) (without -i cython full coverage report may silently fail, if any issue in one file)
+    # log.trace(f'Producing XML file: {cy_tools_coverage_xml}')
+    # coverage_main(['xml', f'--data-file={cy_tools_coverage_data}', f'--rcfile={cy_tools_coverage_rc}', '-i', '-o', cy_tools_coverage_xml])
 
     log.trace(f'Producing HTML file: {cy_tools_coverage_html}')
-    coverage_main(['html', f'--data-file={cy_tools_coverage_data}', f'--rcfile={cy_tools_coverage_rc}', '-i', '-d', cy_tools_coverage_html])
+    title = f'Cython Tools Coverage at {datetime.now()}'
+    coverage_main(['html', f'--data-file={cy_tools_coverage_data}', f'--rcfile={cy_tools_coverage_rc}', f'--title="{title}"', '-i', '-d', cy_tools_coverage_html])
 
-    all_pyx_files = get_all_covered_pyx(cy_tools_coverage_xml)
-    log.debug(f'#{len(all_pyx_files)} pyx files covered in this run')
-
-    # Step 5: recompile cython code with annotations (but no rebuilding)
-    #     Make sure that we use the same method as for initial build
-    log.trace(f'Producing cython annotations with coverage')
-    cython_tools.building.build(project_root,
-                                is_debug=True,
-                                annotate=True,
-                                build_ext=False,
-                                coverage_xml_path=cy_tools_coverage_xml)
-
-    cython_tools.building.annotate(all_pyx_files,
-                                   project_root=project_root,
-                                   force=False,
-                                   append=False,
-                                   )
+    return os.path.join(cy_tools_coverage_html, 'index.html')
+    #
+    # all_pyx_files = get_all_covered_pyx(cy_tools_coverage_xml)
+    # log.debug(f'#{len(all_pyx_files)} pyx files covered in this run')
+    #
+    # # Step 5: recompile cython code with annotations (but no rebuilding)
+    # #     Make sure that we use the same method as for initial build
+    # log.trace(f'Producing cython annotations with coverage')
+    # cython_tools.building.build(project_root,
+    #                             is_debug=True,
+    #                             annotate=True,
+    #                             build_ext=False,
+    #                             coverage_xml_path=cy_tools_coverage_xml)
+    #
+    # cython_tools.building.annotate(all_pyx_files,
+    #                                project_root=project_root,
+    #                                force=False,
+    #                                append=False,
+    #                                )
 
 def get_all_covered_pyx(coverage_rc_file):
     mytree = ET.parse(coverage_rc_file)

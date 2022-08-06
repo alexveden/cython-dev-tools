@@ -1,7 +1,25 @@
 import os
 import re
 from cython_tools.settings import CYTHON_TOOLS_DIRNAME
+import sys
+from cython_tools.logs import log
 
+
+def open_url_in_browser(url):
+    if sys.platform == 'win32':
+        # Not tested!
+        log.CRITICAL(f'Not tested!')
+        os.startfile(url)
+    elif sys.platform == 'darwin':
+        os.spawnlp(os.P_NOWAIT, 'open', 'open', url)
+    else:
+        try:
+            os.spawnlp(os.P_NOWAIT, 'xdg-open', 'xdg-open', url)
+        except OSError:
+            print('Please open a browser on: ' + url)
+
+    sys.stderr.flush()
+    sys.stdout.flush()
 
 def check_project_initialized(project_root):
     if project_root is not None:

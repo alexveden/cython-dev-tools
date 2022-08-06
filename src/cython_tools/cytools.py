@@ -34,7 +34,7 @@ def main(argv=None):
     #
     parser_build = subparsers.add_parser('build',
                                          description='Build cython extensions')
-    parser_build.add_argument('--project-root', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_build.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_build.add_argument('--debug', '-d', action='store_true', help='build debug version for coverage and GDB')
     parser_build.add_argument('--annotate', '-a', action='store_true', help='add HTML Cython annotations')
     parser_build.set_defaults(func=cython_tools.building.build_command)
@@ -46,7 +46,8 @@ def main(argv=None):
                                          description='Runs unit tests on cython files and produces code coverage')
     parser_cover.add_argument('tests_target', help=f'Tests target path relative to project root')
     parser_cover.add_argument('--coverage-engine', help=f'Test runner package (pytest only tested so far)', default='pytest')
-    parser_cover.add_argument('--project-root', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_cover.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_cover.add_argument('--browser', '-b', action='store_true',  help='Open url in browser when coverage is ready')
     parser_cover.set_defaults(func=cython_tools.testing.coverage_command)
 
     #
@@ -58,7 +59,8 @@ def main(argv=None):
                                                          f'Examples: "." - all in project, "package_name/" - all in package, including subpackages ')
     parser_annotate.add_argument('--force', '-f', action='store_true', help='Force replacing HTML annotation files')
     parser_annotate.add_argument('--append', '-a', action='store_true', help='Instead of cleaning up previous annotation, appends new to the structure')
-    parser_annotate.add_argument('--project-root', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_annotate.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_annotate.add_argument('--browser', '-b', action='store_true',  help='Open url in browser when annotation is ready')
     parser_annotate.set_defaults(func=cython_tools.building.annotate_command)
 
 

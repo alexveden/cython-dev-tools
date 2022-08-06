@@ -12,6 +12,7 @@ import glob
 from unittest import mock
 import io
 from .annotate_templates import TEMPLATE_PACKAGE, TEMPLATE_URL, TEMPLATE_ANNOTATE_INDEX
+from cython_tools.common import open_url_in_browser
 import webbrowser
 import subprocess
 
@@ -27,21 +28,10 @@ def annotate_command(args):
             force=args.force,
             append=args.append,
     )
-    #webbrowser.open(annotate_idx_fn)
-    if sys.platform == 'win32':
-        # Not tested!
-        log.CRITICAL(f'Not tested!')
-        os.startfile(annotate_idx_fn)
-    elif sys.platform == 'darwin':
-        os.spawnlp(os.P_NOWAIT, 'open', 'open', annotate_idx_fn)
+    if args.browser:
+        open_url_in_browser(f'file://{annotate_idx_fn}')
     else:
-        try:
-            os.spawnlp(os.P_NOWAIT, 'xdg-open', 'xdg-open', annotate_idx_fn)
-        except OSError:
-            print('Please open a browser on: ' + annotate_idx_fn)
-
-    sys.stderr.flush()
-    sys.stdout.flush()
+        print(f'file://{annotate_idx_fn}')
 
 
 def annotate(
