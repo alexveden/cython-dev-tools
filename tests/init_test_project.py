@@ -1,4 +1,4 @@
-from cython_tools.initializer.command import initialize
+from cython_tools.initializer.initialize import initialize
 import shutil
 import os
 import sys

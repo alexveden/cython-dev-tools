@@ -1,7 +1,7 @@
 import os
 import sys
-from cython_tools.settings import CYTHON_TOOLS_DIRNAME
 from cython_tools.logs import log
+from cython_tools.common import check_project_initialized
 from setuptools import Extension, setup
 import numpy as np
 from Cython.Build import cythonize
@@ -10,31 +10,32 @@ import glob
 from unittest import mock
 
 
-def command(args):
+def build_command(args):
     """
     Main entry point for shell command
     """
+    log.setup('cython_tools__build', verbosity=args.verbose)
 
     build(args.project_root,
           is_debug=args.debug,
           annotate=args.annotate,
-          verbosity=args.verbose,)
+          )
 
 
-def build(project_root: str,
+def build(project_root: str = None,
           is_debug=False,
           annotate=False,
-          log_name='cython_tools__build',
-          verbosity=0):
-    log.setup(log_name, verbosity=verbosity)
+          build_ext=True,
+          coverage_xml_path=None,
+          ):
+
     log.trace(f'project root: {project_root}')
 
-    if not os.path.exists(project_root):
-        raise FileNotFoundError(f'project_root not exists: {project_root}')
-    if not os.path.exists(os.path.join(project_root, CYTHON_TOOLS_DIRNAME)):
-        raise FileNotFoundError(f'{CYTHON_TOOLS_DIRNAME} not exists in project root {project_root}, missing cython tools initialize?')
+    # Check if cython tools in a good state in the project root
+    project_root, cython_tools_path = check_project_initialized(project_root)
 
     # Changing dir to project root
+    prev_dir = os.path.abspath(os.getcwd())
     os.chdir(os.path.abspath(project_root))
     log.trace(os.getcwd())
 
@@ -67,7 +68,7 @@ def build(project_root: str,
         debug_macros = ("CYTHON_TRACE_NOGIL", 1), ("CYTHON_TRACE", 1)
         debug_cythonize_kw = dict(gdb_debug=True,
                                   # cython_debug files output for GDB mapping
-                                  output_dir=os.path.join(project_root, CYTHON_TOOLS_DIRNAME),
+                                  output_dir=cython_tools_path,
                                   compiler_directives={'linetrace': True, 'profile': True, 'binding': True})
         log.trace(f'debug_macros: {debug_macros}')
         log.trace(f'debug_cythonize_kw: {debug_cythonize_kw}')
@@ -101,12 +102,23 @@ def build(project_root: str,
     cythonize_kwargs['annotate'] = annotate
     cythonize_kwargs['force'] = True  # TODO: decide if force is enough or if it need more sophisticated building logic
 
-    setup(name='Cython tools virtual ext',
-          ext_modules=cythonize(project_extensions, **cythonize_kwargs),
-          script_args=['build_ext', '--inplace'])
+    if coverage_xml_path:
+        assert os.path.exists(coverage_xml_path), f'coverage_xml_path: {coverage_xml_path}, not exists'
+        # Undocumented Cython kwargs, but works!
+        cythonize_kwargs['annotate_coverage_xml'] = coverage_xml_path
+        cythonize_kwargs['annotate'] = True
+
+    ext_modules = cythonize(project_extensions, **cythonize_kwargs)
+
+    if build_ext:
+        # Sometimes for coverage we need to re-run cythonize only,
+        # without rebuilding the full cove
+        setup(name='Cython tools virtual ext',
+              ext_modules=ext_modules,
+              script_args=['build_ext', '--inplace'])
+
+    os.chdir(prev_dir)
     log.info(f'Debug build completed')
-
-
 
 
 def load_extensions_from_setup():

@@ -65,7 +65,7 @@ class YaUberLogger(logging.Logger):
 
             self.logger.removeHandler(hdlr)
 
-        formatter = logging.Formatter(fmt=f'%(asctime)s [%(filename)30s:%(lineno)-4s] %(levelname)5s - %(message)s')
+        formatter = logging.Formatter(fmt=f'%(asctime)s [{self.logger_name}] %(levelname)5s - %(message)s')
 
         if self.base_dir:
             handler_file = logging.FileHandler(os.path.join(self.base_dir,

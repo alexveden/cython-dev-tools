@@ -1,4 +1,22 @@
+import os
 import re
+from cython_tools.settings import CYTHON_TOOLS_DIRNAME
+
+
+def check_project_initialized(project_root):
+    if project_root is not None:
+        if not os.path.exists(project_root):
+            raise FileNotFoundError(f'project_root not exists: {project_root}')
+        project_root = os.path.abspath(project_root)
+        os.chdir(project_root)
+    else:
+        project_root = os.getcwd()
+
+
+    if not os.path.exists(os.path.join(project_root, CYTHON_TOOLS_DIRNAME)):
+        raise FileNotFoundError(f'{CYTHON_TOOLS_DIRNAME} not exists in project root {project_root}, missing cython tools initialize?')
+
+    return project_root, os.path.join(project_root, CYTHON_TOOLS_DIRNAME)
 
 
 def parse_input(input_type, default=None, prompt='', regex=None, n_trials=3):
