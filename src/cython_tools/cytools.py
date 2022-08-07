@@ -57,11 +57,14 @@ def main(argv=None):
     # `annotate` command arguments
     #
     parser_annotate = subparsers.add_parser('annotate',
-                                            description='Build .pyx files HTML annotations, and returns HTML file link')
-    parser_annotate.add_argument('annotate_target', help=f'Individual .pyx file, or folder relative to project root path (finds all .pyx in subfolders also).'
-                                                         f'Examples: "." - all in project, "package_name/" - all in package, including subpackages ')
+                                            description='Build .pyx files HTML annotations, and returns HTML file link',
+                                            formatter_class=RawTextHelpFormatter)
+    parser_annotate.add_argument('annotate_target', help=f'Individual .pyx file, or folder relative to project root path (finds all .pyx in subfolders also).\n'
+                                                         f'Examples: \n'
+                                                         f'"." - all in project \n'
+                                                         f'"package_name/" - all in package including subpackages ')
     parser_annotate.add_argument('--force', '-f', action='store_true', help='Force replacing HTML annotation files')
-    parser_annotate.add_argument('--append', '-a', action='store_true', help='Instead of cleaning up previous annotation, appends new to the structure')
+    parser_annotate.add_argument('--append', '-a', action='store_true', help='Instead of cleaning up previous annotation index, appends new to the structure')
     parser_annotate.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_annotate.add_argument('--browser', '-b', action='store_true',  help='Open url in browser when annotation is ready')
     parser_annotate.set_defaults(func=cython_tools.building.annotate_command)
@@ -89,12 +92,13 @@ def main(argv=None):
                                    f'-b 10 - sets line 10 breakpoint at `debug_target` (only Cython)\n'
                                    f'-b SomeClass.meth - class/method breakpoint inside `debug_target`\n'
                                    f'-b another_pkg:SomeClass.meth - class method breakpoint somewhere is project root\n'
-                                   f'-b another_pkg:meth - method breakpoint somewhere is project root\n'
+                                   f'-b another_pkg:meth - method breakpoint somewhere in project root\n'
                                    f'-b package/sub_package/module.pyx:23 - line breakpoint by path (only Cython)\n'
                                    f'-b package/sub_package/module.pyx:SomeClass.meth - class method breakpoint by path\n'
                               )
     parser_debug.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
-    parser_debug.add_argument('--cygdb-verbosity', help=f'Print more debug information when in GDB, integer [0, 4]', type=int, default=0)
+    parser_debug.add_argument('--cygdb-verbosity', type=int, default=0,
+                              help=f'Print more debug information when in GDB, integer [0, 4]. Typically only used to debug the debugger')
     parser_debug.set_defaults(func=cython_tools.debugger.debug_command)
 
 
