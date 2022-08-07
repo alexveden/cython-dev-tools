@@ -1,5 +1,7 @@
 import os
 import re
+from typing import List
+
 from cython_tools.settings import CYTHON_TOOLS_DIRNAME
 import sys
 from cython_tools.logs import log
@@ -8,6 +10,26 @@ from cython_tools.logs import log
 RE_PY_FILE = re.compile(r"[A-Za-z\d\._\/\\]+\.py[x]?$", re.MULTILINE)
 RE_PY_PACKAGE = re.compile(r"^[A-Za-z\d\._]+$", re.MULTILINE)
 RE_ANY_CLASS = re.compile(r"(^cdef +|^)class +[A-Za-z\d_]+(:|\()", re.MULTILINE)
+
+
+def make_run_args(code_file, package, entry_method, escape=False) -> List[str]:
+    """
+    Simple python arguments to run package by path
+
+    :param code_file:
+    :param package:
+    :param entry_method:
+    :return:
+    """
+    assert os.path.exists(code_file), f'{code_file} not exists'
+
+    if entry_method is None:
+        return ['-m', f'{package}']
+    else:
+        if escape:
+            return ['-c', f'"import {package}; {package}.{entry_method}();"']
+        else:
+            return ['-c', f'import {package}; {package}.{entry_method}();']
 
 
 def check_method_exists(code_file, method_def, as_entry=False) -> bool:

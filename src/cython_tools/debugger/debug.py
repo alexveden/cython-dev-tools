@@ -6,7 +6,7 @@ import tempfile
 import textwrap
 from .gbd.gdb_command_template import GDB_TEMPLATE
 from cython_tools.logs import log
-from ..common import check_project_initialized, check_method_exists, find_package_path
+from ..common import check_project_initialized, check_method_exists, find_package_path, make_run_args
 import re
 
 
@@ -125,10 +125,7 @@ def make_command_file(debug_target, project_root, cython_tools_path, cygdb_verbo
 
     cy_breakpoint = '\n'.join([validate_breakpoint(project_root, bp) for bp in break_list if bp])
 
-    if entry_method is None:
-        run_instruct = f'-m {package}'
-    else:
-        run_instruct = f'-c "import {package};{package}.{entry_method}();"'
+    run_instruct = ' '.join(make_run_args(source_file, package, entry_method, escape=True))
 
     pattern = os.path.join(cython_tools_path,
                            'cython_debug',

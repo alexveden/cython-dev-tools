@@ -102,11 +102,30 @@ def main(argv=None):
     parser_debug.set_defaults(func=cython_tools.debugger.debug_command)
 
 
+
+    #
+    # `run` command arguments
+    #
+    parser_run = subparsers.add_parser('run',
+                                       description='Runs Cython/Python script',
+                                       formatter_class=RawTextHelpFormatter)
+    parser_run.add_argument('run_target',
+                            help=f'A python/cython module path (must be relative to project root!)\n'
+                                 f'Examples:\n'
+                                 f'package/sub_package/module.py - starts __main__ in Python module\n'
+                                 f'package.sub_package.module - starts __main__ in Python module\n'
+                                 f'package/sub_package/cy_module.pyx@main - starts main() in Cython module, entry point is mandatory\n'
+                                 f'package.sub_package.cy_module@main - starts main() in Cython module, entry point is mandatory\n'
+                            )
+    parser_run.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_run.set_defaults(func=cython_tools.debugger.run_command)
+
     args = parser.parse_args(argv)
     if argv is None and len(sys.argv) == 1:
         parser.print_help()
         sys.exit(0)
     else:
+        #print(args)
         args.func(args)
 
 
