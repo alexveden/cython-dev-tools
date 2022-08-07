@@ -25,8 +25,6 @@ def build_command(args):
 def build(project_root: str = None,
           is_debug=False,
           annotate=False,
-          build_ext=True,
-          coverage_xml_path=None,
           ):
 
     log.trace(f'project root: {project_root}')
@@ -102,23 +100,14 @@ def build(project_root: str = None,
     cythonize_kwargs['annotate'] = annotate
     cythonize_kwargs['force'] = True  # TODO: decide if force is enough or if it need more sophisticated building logic
 
-    if coverage_xml_path:
-        assert os.path.exists(coverage_xml_path), f'coverage_xml_path: {coverage_xml_path}, not exists'
-        # Undocumented Cython kwargs, but works!
-        cythonize_kwargs['annotate_coverage_xml'] = coverage_xml_path
-        cythonize_kwargs['annotate'] = True
-
     ext_modules = cythonize(project_extensions, **cythonize_kwargs)
 
-    if build_ext:
-        # Sometimes for coverage we need to re-run cythonize only,
-        # without rebuilding the full cove
-        setup(name='Cython tools virtual ext',
-              ext_modules=ext_modules,
-              script_args=['build_ext', '--inplace'])
+    setup(name='Cython tools virtual ext',
+          ext_modules=ext_modules,
+          script_args=['build_ext', '--inplace'])
 
     os.chdir(prev_dir)
-    log.info(f'Debug build completed')
+    log.info(f'Build completed')
 
 
 def load_extensions_from_setup():

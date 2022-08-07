@@ -2,17 +2,20 @@
 Cython Tools Management script
 """
 import argparse
+from argparse import RawTextHelpFormatter
 import sys
 import os
 import cython_tools.building
 import cython_tools.testing
+import cython_tools.debugger
 from cython_tools.settings import CYTHON_TOOLS_DIRNAME
 
 
 def main(argv=None):
     # create the top-level parser
     parser = argparse.ArgumentParser(description='Cython development toolkit (debugger, profiler, coverage, unit tests)\n'
-                                                 f'To get more help run: {os.path.basename(sys.argv[0])} <COMMAND> --help/-h')
+                                                 f'To get more help run: {os.path.basename(sys.argv[0])} <COMMAND> --help/-h',
+                                     )
     parser.add_argument('--verbose', '-v', action='count', default=0)
     subparsers = parser.add_subparsers(title='COMMAND')
 
@@ -62,6 +65,37 @@ def main(argv=None):
     parser_annotate.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_annotate.add_argument('--browser', '-b', action='store_true',  help='Open url in browser when annotation is ready')
     parser_annotate.set_defaults(func=cython_tools.building.annotate_command)
+
+    #
+    # `debug` command arguments
+    #
+    parser_debug = subparsers.add_parser('debug',
+                                         description='Starts cython debugger',
+                                         formatter_class=RawTextHelpFormatter)
+    parser_debug.add_argument('debug_target',
+                              help=f'A python/cython module path or initial breakpoint (must be relative to project root!)\n'
+                                   f'Examples:\n'
+                                   f'package/sub_package/module.py - starts __main__ in Python module\n'
+                                   f'package.sub_package.module - starts __main__ in Python module\n'
+                                   f'package/sub_package/cy_module.pyx@main - starts main() in Cython module, entry point is mandatory\n'
+                                   f'package.sub_package.cy_module@main - starts main() in Cython module, entry point is mandatory\n'
+                                   f'package.sub_package.cy_module@main:23 - starts main() in Cython module, entry point is mandatory, break at line 23\n'
+                                   f'package.sub_package.cy_module@main:test_break - starts main() in Cython module, break at test_break() of this module\n'
+                              )
+    parser_debug.add_argument('--breakpoint', '-b',
+                              action='append',
+                              help=f'Set initial breakpoint for the debugger (can be used multiple times, must be relative to project root!)\n'
+                                   f'Examples:\n'
+                                   f'-b 10 - sets line 10 breakpoint at `debug_target` (only Cython)\n'
+                                   f'-b SomeClass.meth - class/method breakpoint inside `debug_target`\n'
+                                   f'-b another_pkg:SomeClass.meth - class method breakpoint somewhere is project root\n'
+                                   f'-b another_pkg:meth - method breakpoint somewhere is project root\n'
+                                   f'-b package/sub_package/module.pyx:23 - line breakpoint by path (only Cython)\n'
+                                   f'-b package/sub_package/module.pyx:SomeClass.meth - class method breakpoint by path\n'
+                              )
+    parser_debug.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_debug.add_argument('--cygdb-verbosity', help=f'Print more debug information when in GDB, integer [0, 4]', type=int, default=0)
+    parser_debug.set_defaults(func=cython_tools.debugger.debug_command)
 
 
     args = parser.parse_args(argv)

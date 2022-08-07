@@ -84,7 +84,12 @@ def initialize(project_root: str,
         make_samples(project_root)
 
     if include_boilerplate:
-        make_boilerplate(project_root, boilerplate_name)
+        if boilerplate_name is not None:
+            # Possibly called via script
+            make_boilerplate(project_root, boilerplate_name, include_class=True, include_module=True, include_tests=True)
+        else:
+            # Make more interactive
+            make_boilerplate(project_root)
 
 
 def make_samples(project_root):
