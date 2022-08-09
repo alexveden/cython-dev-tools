@@ -2,12 +2,14 @@
 Cython Tools Management script
 """
 import argparse
-from argparse import RawTextHelpFormatter
-import sys
 import os
+import sys
+from argparse import RawTextHelpFormatter
+
 import cython_tools.building
-import cython_tools.testing
 import cython_tools.debugger
+import cython_tools.testing
+import cython_tools.maintenance
 from cython_tools.settings import CYTHON_TOOLS_DIRNAME
 
 
@@ -39,6 +41,7 @@ def main(argv=None):
                                          description='Build cython extensions')
     parser_build.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_build.add_argument('--debug', '-d', action='store_true', help='build debug version for coverage and GDB')
+    parser_build.add_argument('--annotate', '-a', action='store_true', help='create HTML annotation file nearby .pyx')
     parser_build.add_argument('--force', '-f', action='store_true', help='force rebuilding all cython files')
     parser_build.set_defaults(func=cython_tools.building.build_command)
 
@@ -118,6 +121,20 @@ def main(argv=None):
                             )
     parser_run.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_run.set_defaults(func=cython_tools.debugger.run_command)
+
+    #
+    # `clean` command arguments
+    #
+    parser_clean = subparsers.add_parser('clean',
+                                         description='Clean Cython project structure form all non <module>.pyx '
+                                                     '(i.e. <module>.c, <module>.html, <module>*.so/dll)\n',
+                                         formatter_class=RawTextHelpFormatter)
+
+    parser_clean.add_argument('--yes', '-y', action='store_true',
+                                 help='Confirm deletion all files without prompt')
+    parser_clean.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_clean.add_argument('--delete-build', '-b', action='store_true', help=f'deletes a build directory in project root')
+    parser_clean.set_defaults(func=cython_tools.maintenance.clean_command)
 
     args = parser.parse_args(argv)
     if (argv is None and len(sys.argv) == 1) or 'func' not in args:

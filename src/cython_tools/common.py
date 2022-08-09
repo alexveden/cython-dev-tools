@@ -216,9 +216,11 @@ def parse_input(input_type, default=None, prompt='', regex=None, n_trials=3):
         if default is None:
             # Add new line to prompt to make logging output look correct
             if input_type is bool:
-                value = input(prompt + ' [y/n] \n')
+                print(prompt + ' [y/n]')
+                value = input()
             else:
-                value = input(prompt + '\n')
+                print(prompt)
+                value = input()
         else:
             value = default
 

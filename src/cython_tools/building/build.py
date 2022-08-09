@@ -26,12 +26,14 @@ def build_command(args):
     build(args.project_root,
           is_debug=args.debug,
           force=args.force,
+          annotate=args.annotate,
           )
 
 
 def build(project_root: str = None,
           is_debug=False,
           force=False,
+          annotate=False,
           ):
 
     log.trace(f'project root: {project_root}')
@@ -113,6 +115,7 @@ def build(project_root: str = None,
     log.trace(f'cythonize_kwargs: {cythonize_kwargs}')
 
     cythonize_kwargs['force'] = force
+    cythonize_kwargs['annotate'] = annotate
 
     ext_modules = cythonize(project_extensions, **cythonize_kwargs)
 
