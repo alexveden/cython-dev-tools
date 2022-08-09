@@ -4,7 +4,7 @@ p ?= $(PROJ_ROOT)
 #GDB_EXECUTABLE:=/usr/local/bin/gdb13
 GDB_EXECUTABLE:=gdb
 
-CYTOOL:=./cytool
+CYTOOL:=./cytool -v
 
 # Python execution which should be used for building module, in debug mode
 #   Typically original python is fine for debugging cython modules, but if you need more debug info (python symbols)
@@ -16,10 +16,25 @@ PY_EXEC:=python
 TEST_EXEC:=pytest
 
 
-.PHONY: build build-debug tests coverage debug-file debug-tests debug-valgrind
+.PHONY: build build-debug tests coverage annotate debug-file debug-tests debug-valgrind run
 
 build:
 	$(CYTOOL) build
 
+build-debug:
+	$(CYTOOL) build --debug
+
 tests: build
 	export PYTHONPATH=$(PROJ_ROOT):$(PYTHONPATH); python -m $(TEST_EXEC) $(p)
+
+run:
+	$(CYTOOL) run cy_tools_samples/cy_memory_unsafe.pyx@main
+
+debug: build-debug
+	$(CYTOOL) debug cy_tools_samples/cy_memory_unsafe.pyx@main -b 41
+
+coverage: build-debug
+	$(CYTOOL) cover . --browser
+
+annotate: build-debug
+	$(CYTOOL) annotate . --browser

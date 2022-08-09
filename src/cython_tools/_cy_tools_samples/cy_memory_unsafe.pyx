@@ -73,8 +73,8 @@ cpdef main():
 
     for i in range(buf_count):
         ltr = str(data[i])
-        print(ltr, end=' '),
-    #print(data)
+        print(ltr),
+    #print('Hey!')
 
     cdef Header * h2 = <Header *> data
     print('\nH2')

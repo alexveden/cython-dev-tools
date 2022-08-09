@@ -40,7 +40,6 @@ def main(argv=None):
     parser_build.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_build.add_argument('--debug', '-d', action='store_true', help='build debug version for coverage and GDB')
     parser_build.add_argument('--force', '-f', action='store_true', help='force rebuilding all cython files')
-    parser_build.add_argument('--annotate', '-a', action='store_true', help='add HTML Cython annotations')
     parser_build.set_defaults(func=cython_tools.building.build_command)
 
     #
@@ -64,7 +63,6 @@ def main(argv=None):
                                                          f'Examples: \n'
                                                          f'"." - all in project \n'
                                                          f'"package_name/" - all in package including subpackages ')
-    parser_annotate.add_argument('--force', '-f', action='store_true', help='Force replacing HTML annotation files')
     parser_annotate.add_argument('--append', '-a', action='store_true', help='Instead of cleaning up previous annotation index, appends new to the structure')
     parser_annotate.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_annotate.add_argument('--browser', '-b', action='store_true',  help='Open url in browser when annotation is ready')

@@ -25,7 +25,6 @@ def annotate_command(args):
     annotate_idx_fn = annotate(
             args.annotate_target,
             project_root=args.project_root,
-            force=args.force,
             append=args.append,
     )
     if args.browser:
@@ -37,7 +36,6 @@ def annotate_command(args):
 def annotate(
             pyx_file_or_list: Union[str, List[str], None] = None,
             project_root: str = None,
-            force = False,
             append = False,
             ):
     """
@@ -103,28 +101,25 @@ def annotate(
             # Cleanup old ctools backups (maybe kept after crashes)
             os.unlink(c_fn + '.ctools')
 
-        if not os.path.exists(html_fn) or force or is_singe_file:
-            log.trace(f'Annotating: {html_fn}')
-            if os.path.exists(c_fn):
-                # Preserve old source just in case if it has compiled with different flags
-                shutil.move(c_fn, c_fn+'.ctools')
+        log.trace(f'Annotating: {html_fn}')
+        if os.path.exists(c_fn):
+            # Preserve old source just in case if it has compiled with different flags
+            shutil.move(c_fn, c_fn+'.ctools')
 
-            os.system(f'cython --annotate {pyx_fn}')
+        os.system(f'cython -3 --annotate {pyx_fn}')
 
-            # Delete new .c file, and replace with backup
-            os.unlink(c_fn)
-            if os.path.exists(c_fn+'.ctools'):
-                shutil.move(c_fn + '.ctools', c_fn)
+        # Delete new .c file, and replace with backup
+        os.unlink(c_fn)
+        if os.path.exists(c_fn+'.ctools'):
+            shutil.move(c_fn + '.ctools', c_fn)
 
-            assert os.path.exists(html_fn), f'No annotations was generated from {pyx_fn}'
-        else:
-            log.trace(f'Using existing annotation: {html_fn}')
+        assert os.path.exists(html_fn), f'No annotations was generated from {pyx_fn}'
 
         # Move file to annotations
         if not is_singe_file:
             log.trace(f'Copy: {html_fn} to {annotate_html_file}')
             os.makedirs(os.path.dirname(annotate_html_file), exist_ok=True)
-            shutil.copy(html_fn, annotate_html_file)
+            shutil.move(html_fn, annotate_html_file)
         else:
             # Don't move annotated file, just use is as single index
             annotation_index_path = html_fn
