@@ -39,6 +39,7 @@ def main(argv=None):
                                          description='Build cython extensions')
     parser_build.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_build.add_argument('--debug', '-d', action='store_true', help='build debug version for coverage and GDB')
+    parser_build.add_argument('--force', '-f', action='store_true', help='force rebuilding all cython files')
     parser_build.add_argument('--annotate', '-a', action='store_true', help='add HTML Cython annotations')
     parser_build.set_defaults(func=cython_tools.building.build_command)
 
@@ -121,7 +122,7 @@ def main(argv=None):
     parser_run.set_defaults(func=cython_tools.debugger.run_command)
 
     args = parser.parse_args(argv)
-    if argv is None and len(sys.argv) == 1:
+    if (argv is None and len(sys.argv) == 1) or 'func' not in args:
         parser.print_help()
         sys.exit(0)
     else:

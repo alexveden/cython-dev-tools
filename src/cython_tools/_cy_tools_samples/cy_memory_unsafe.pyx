@@ -16,6 +16,7 @@ cdef class TestClass:
 
     def main(self):
         print('World')
+        #print('Hey')
 
 
 cpdef main_add(int a, int b):

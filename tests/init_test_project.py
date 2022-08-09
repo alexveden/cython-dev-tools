@@ -12,14 +12,18 @@ if __name__ == '__main__':
 
     initialize(proj_root,
                verbosity=3,
-               include_samples=True,
+               include_samples=False,
                include_boilerplate=True,
                boilerplate_name='cytoolzz',
                )
-    os.putenv()
-    build(proj_root, is_debug=True, annotate=True)
 
     shutil.copy(os.path.join(os.path.dirname(__file__), '..', 'src', 'cython_tools', '_boilerplate_package', 'cytools_script.py'),
                 os.path.join(proj_root, 'cytool'))
-
     subprocess.call(['chmod', '+x', os.path.join(proj_root, 'cytool')])
+
+    os.symlink(os.path.join(os.path.dirname(__file__), '..', 'src', 'cython_tools', '_cy_tools_samples'), os.path.join(proj_root, 'cy_tools_samples'))
+
+    os.unlink(os.path.join(proj_root, 'Makefile'))
+    os.symlink(os.path.join(os.path.dirname(__file__), '..', 'src', 'cython_tools', '_boilerplate_package', 'Makefile'), os.path.join(proj_root, 'Makefile'))
+
+    build(proj_root, is_debug=True, annotate=True)
