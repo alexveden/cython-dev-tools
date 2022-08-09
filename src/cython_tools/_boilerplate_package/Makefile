@@ -31,10 +31,11 @@ run:
 	$(CYTOOL) run cy_tools_samples/cy_memory_unsafe.pyx@main
 
 debug: build-debug
-	$(CYTOOL) debug cy_tools_samples/low_level/strings.pyx@main
+	$(CYTOOL) debug cy_tools_samples/low_level/arrays_resize.pyx@main
 
 debug-file: build-debug
-	$(CYTOOL) run cy_tools_samples/low_level/strings.pyx@main
+	#$(CYTOOL) run cy_tools_samples/debugging/assertions.pyx@main
+	$(CYTOOL) debug cy_tools_samples/debugging/assertions.pyx@main
 
 annotate-file: build-debug
 	$(CYTOOL) annotate cy_tools_samples/low_level/dynamic_memory.pyx --browser
