@@ -10,7 +10,11 @@ Equivalent of C code:
 https://github.com/cython/cython/blob/master/Cython/Includes/libc/
 
 Cython Tools run command:
-cytool run cy_tools_samples/low_level/errors.pyx@main
+cytool run cy_tools_samples/debugging/errors.pyx@main
+
+# In the debugger with breakpoints
+cytool debug cy_tools_samples/debugging/errors.pyx@main:45
+
 """
 from libc.errno cimport errno, ENOENT
 from libc.stdio cimport printf, FILE, fopen, stderr, perror, fprintf
