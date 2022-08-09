@@ -22,7 +22,7 @@ build:
 	$(CYTOOL) build
 
 build-debug:
-	$(CYTOOL) build --debug
+	$(CYTOOL) build --debug --annotate
 
 tests: build
 	export PYTHONPATH=$(PROJ_ROOT):$(PYTHONPATH); python -m $(TEST_EXEC) $(p)
@@ -31,10 +31,10 @@ run:
 	$(CYTOOL) run cy_tools_samples/cy_memory_unsafe.pyx@main
 
 debug: build-debug
-	$(CYTOOL) debug cy_tools_samples/cy_memory_unsafe.pyx@main -b 41
+	$(CYTOOL) debug cy_tools_samples/low_level/strings.pyx@main
 
 debug-file: build-debug
-	$(CYTOOL) run cy_tools_samples/low_level/dynamic_memory.pyx@main
+	$(CYTOOL) run cy_tools_samples/low_level/strings.pyx@main
 
 annotate-file: build-debug
 	$(CYTOOL) annotate cy_tools_samples/low_level/dynamic_memory.pyx --browser
@@ -46,4 +46,4 @@ annotate: build-debug
 	$(CYTOOL) annotate . --browser
 
 clean:
-	$(CYTOOL) -vvvv clean -y -b
+	$(CYTOOL) clean -y -b
