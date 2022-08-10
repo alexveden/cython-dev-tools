@@ -136,6 +136,44 @@ def main(argv=None):
     parser_clean.add_argument('--delete-build', '-b', action='store_true', help=f'deletes a build directory in project root')
     parser_clean.set_defaults(func=cython_tools.maintenance.clean_command)
 
+
+    #
+    # `lprun` command arguments
+    #
+    parser_lprun = subparsers.add_parser('lprun',
+                                         description='Run line profiler on Cython/Python code',
+                                         formatter_class=RawTextHelpFormatter)
+
+    parser_lprun.add_argument('profile_target',
+                            help=f'A python/cython module path (must be relative to project root!)\n'
+                                 f'Profiled functin must support simple args, kwargs of primitive Python types\n'
+                                 f'Examples:\n'
+                                 f'cy_tools_samples/profiler/cy_module.pyx@approx_pi2(10)\n'
+                                 f'some_module.py@some_func(10.1, [1, 2.2, 3], kwarg1="test")\n'
+                            )
+
+    parser_lprun.add_argument('--function', '-f',
+                              action='append',
+                              help=f'Add function to the profiler report\n'
+                                   f'Examples:\n'
+                                   f'-f cy_tools_samples/profiler/cy_module.pyx@recip_square2 - by path\n'
+                                   f'-f cy_tools_samples.profiler.cy_module@recip_square2 - by package\n'
+                                   f'-f recip_square2 - another function in `profile_target` module`\n'
+                                   f'-f SomeClass.class_method - class method profile\n'
+                                   f'-f cy_tools_samples.profiler.cy_module.pyx@SQ.recip_square_ - another package with class\n'
+                              )
+
+    parser_lprun.add_argument('--module', '-m',
+                              action='append',
+                              help=f'Add all module methods and classes to profiler report\n'
+                                   f'Examples:\n'
+                                   f'-m cy_tools_samples/profiler/cy_module.pyx - by path\n'
+                                   f'-m cy_tools_samples.profiler.cy_module - by package\n'
+                              )
+
+    parser_lprun.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_lprun.set_defaults(func=cython_tools.testing.lprun_command)
+
     args = parser.parse_args(argv)
     if (argv is None and len(sys.argv) == 1) or 'func' not in args:
         parser.print_help()

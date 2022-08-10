@@ -38,6 +38,9 @@ debug-file: build-debug
 	#$(CYTOOL) debug cy_tools_samples/debugging/segfault.pyx@main
 	$(CYTOOL) debug cy_tools_samples/debugging/abort.pyx@main --cygdb-verbosity=4
 
+lprun-file: build-debug
+	$(CYTOOL) lprun cy_tools_samples/profiler/cy_module.pyx@approx_pi2"(10)" -m cy_tools_samples/profiler/cy_module.pyx
+
 annotate-file: build-debug
 	$(CYTOOL) annotate cy_tools_samples/low_level/dynamic_memory.pyx --browser
 

@@ -20,6 +20,7 @@ dependencies = [
     "numpy",
     "pytest",
     "coverage",
+    "line_profiler",
 ]
 requires-python = ">=3.6"
 

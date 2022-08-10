@@ -68,9 +68,46 @@ class CyToolsCommonTestCase(unittest.TestCase):
         self.assertEqual(True, check_method_exists(fn, 'valid_entry3', as_entry=True))
         self.assertRaises(ValueError, check_method_exists, fn, 'invalid_entry1', as_entry=True)
         self.assertRaises(ValueError, check_method_exists, fn, 'invalid_entry2', as_entry=True)
-        self.assertRaises(ValueError, check_method_exists, fn, 'invalid_entry3', as_entry=True)
+        # Arguments now allowed
+        #self.assertRaises(ValueError, check_method_exists, fn, 'invalid_entry3', as_entry=True)
         self.assertRaises(ValueError, check_method_exists, fn, 'invalid_entry4', as_entry=True)
 
+    def test_check__args(self):
+        args, kwargs = check_method_args(None)
+        self.assertEqual(args, ())
+        self.assertEqual(kwargs, {})
+
+        args, kwargs = check_method_args('')
+        self.assertEqual(args, ())
+        self.assertEqual(kwargs, {})
+
+        args, kwargs = check_method_args('()')
+        self.assertEqual(args, ())
+        self.assertEqual(kwargs, {})
+
+        args, kwargs = check_method_args('(1, 2, 3, n="ok")')
+        self.assertEqual(args, (1, 2, 3))
+        self.assertEqual(kwargs, {'n': 'ok'})
+
+        args, kwargs = check_method_args('([1,2,3], 2, 3, n="ok", d={3:"m"})')
+        self.assertEqual(args, ([1, 2, 3], 2, 3))
+        self.assertEqual(kwargs, {'n': 'ok', 'd': {3: "m"}})
+
+        args, kwargs = check_method_args('(dict(b=2), 2, 3, n="ok", d={3:"m"})')
+        self.assertEqual(args, (dict(b=2), 2, 3))
+        self.assertEqual(kwargs, {'n': 'ok', 'd': {3: "m"}})
+
+        with self.assertRaises(ValueError) as exc:
+            args, kwargs = check_method_args('(OrderedDict(b=2), 2, 3, n="ok", d={3:"m"})')
+        self.assertTrue('Error parsing arguments' in str(exc.exception))
+
+        with self.assertRaises(ValueError) as exc:
+            args, kwargs = check_method_args('(')
+        self.assertTrue('Arguments must start with "("' in str(exc.exception), str(exc.exception))
+
+        with self.assertRaises(ValueError) as exc:
+            args, kwargs = check_method_args(')')
+        self.assertTrue('Arguments must start with "("' in str(exc.exception), str(exc.exception))
 
 
 

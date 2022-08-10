@@ -32,6 +32,26 @@ def make_run_args(code_file, package, entry_method, escape=False) -> List[str]:
             return ['-c', f'import {package}; {package}.{entry_method}();']
 
 
+def check_method_args(args_str: str):
+    """
+    Parses primitive arguments and decide if they are OK for passing as entry point function
+    """
+    if not args_str:
+        # Empty args / kwargs
+        return (), {}
+    args_str = args_str.strip()
+
+    if not args_str.startswith('(') or not args_str.endswith(')'):
+        raise ValueError(f'Arguments must start with "(" and end with ")"')
+
+    def __test_args(*args, **kwargs):
+        return args, kwargs
+    try:
+        return eval(f"__test_args{args_str}")
+    except Exception as exc:
+        raise ValueError(f'Error parsing arguments `{args_str}`, it must only contain primitive or builtin types, err: {exc}')
+
+
 def check_method_exists(code_file, method_def, as_entry=False) -> bool:
     """
     Check is the file contains method in its source code, raises ValueError on failure
@@ -85,8 +105,8 @@ def check_method_exists(code_file, method_def, as_entry=False) -> bool:
             else:
                 if re_bp_func.match(l):
                     _func_found = True
-                    if as_entry and not re.match(rf"^(cpdef|def)( +| .* ){bp_func_name}\(\s*\)", l):
-                        raise ValueError(f'Found entry point, it must be def/cpdef with NO arguments '
+                    if as_entry and not re.match(rf"^(cpdef|def)( +| .* ){bp_func_name}\(.*", l):
+                        raise ValueError(f'Found entry point, it must be def/cpdef'
                                          f'in file://{code_file}, line: {i + 1}, code: `{l}` ')
 
         if re_bp_func is not None and not _func_found:
