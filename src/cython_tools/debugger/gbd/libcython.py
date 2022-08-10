@@ -66,7 +66,7 @@ else:
     from shlex import split as string_to_argv
 
 from cython_tools.debugger.gbd import libpython
-from cython_tools.debugger.gbd.libpython import TRACE
+from cython_tools.debugger.gbd.libpython import TRACE, DEBUG_TRACE
 
 
 # C or Python type
@@ -236,6 +236,22 @@ class CythonBase(object):
     def get_cython_function(self, frame):
         result = self.cy.functions_by_cname.get(frame.name())
         if result is None:
+            if frame.name() == 'raise':
+                # Handling possible C-breakpoints, i.e. raise_(SIGTRAP)
+                try:
+                    arg_val = frame.read_var('sig')
+                    _sig = int(arg_val.format_string(format="d"))
+                    if _sig == 5:
+                        TRACE(f'cybreakpoint: incode breakpoint triggered')
+                        gdb.execute('cy up')
+                        gdb.execute('cy list')
+                        return None
+                except:
+                    if DEBUG_TRACE > 4:
+                        breakpoint()
+                    raise NoCythonFunctionInFrameError(frame.name())
+            if DEBUG_TRACE > 4:
+                breakpoint()
             raise NoCythonFunctionInFrameError()
 
         return result
@@ -259,7 +275,7 @@ class CythonBase(object):
     def get_source_desc(self, frame):
 
         frame_name = frame.name()
-        TRACE(f'get_source_desc() - frame: `{frame_name}`', 1)
+        TRACE(f'libcython get_source_desc() - frame: `{frame_name}`', 2)
         if frame_name.startswith('__pyx_pf_'):
             # For `def` functions Cython generates 2 types of functions:
             #  __pyx_pf_8examples_16cy_memory_unsafe_2hello  (which is typically in current frame)
@@ -306,6 +322,8 @@ class CythonBase(object):
         else:
             TRACE(f'get_source_desc(): is_C_function', 2)
             TRACE(f'Available cython func: {self.cy.functions_by_cname.keys()}', 2)
+            if DEBUG_TRACE > 4:
+                breakpoint()
             filename, lexer, lineno = self.get_c_lexer(frame)
 
         return SourceFileDescriptor(filename, lexer), lineno
@@ -325,6 +343,7 @@ class CythonBase(object):
 
     @default_selected_gdb_frame()
     def get_source_line(self, frame):
+        TRACE(f'libcython: get_source_line frame:{frame.name()}', 3)
         source_desc, lineno = self.get_source_desc()
         return source_desc.get_source(lineno)
 
@@ -334,6 +353,7 @@ class CythonBase(object):
         returns whether we care about a frame on the user-level when debugging
         Cython code
         """
+        TRACE('libcython: is_relevant_function >>>', 3)
         name = frame.name()
         older_frame = frame.older()
         if self.is_cython_function(frame) or self.is_python_function(frame):
@@ -351,6 +371,21 @@ class CythonBase(object):
             if is_relevant:
                 is_relevant = self._is_relevant_c_line(frame)
             return is_relevant
+        else:
+            if frame.name() == 'raise' or frame.name() == '__GI_raise':
+                # Handling possible C-breakpoints, i.e. raise_(SIGTRAP) or assert/abort
+                try:
+                    arg_val = frame.read_var('sig')
+                    _sig = int(arg_val.format_string(format="d"))
+                    if _sig == 5 or _sig == 6:
+                        TRACE(f'libcython: is_relevant_function breakpoint/assert/abort triggered', 3)
+                        gdb.execute('cy up')
+                        gdb.execute('cy list')
+                        return False
+                except Exception as exc:
+                    TRACE(f'libcython: is_relevant_function -- function looks like raise/breakpoint/assert, but failed with {repr(exc)}', 1)
+                    if DEBUG_TRACE > 4:
+                        breakpoint()
 
         return False
 
@@ -358,6 +393,8 @@ class CythonBase(object):
         is_relevant = True
 
         cython_func = self.get_cython_function(frame)
+        if cython_func is None:
+            return False
         # Sometimes in weird case Cython calls C_MACROS which are out of normal source range
         #  make debugger to ignore them
         #  for i in range(buf_count):

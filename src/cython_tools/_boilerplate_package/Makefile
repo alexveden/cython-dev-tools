@@ -34,9 +34,9 @@ debug: build-debug
 	$(CYTOOL) debug cy_tools_samples/low_level/arrays_resize.pyx@main
 
 debug-file: build-debug
-	#$(CYTOOL) run cy_tools_samples/debugging/assertions.pyx@main
+	#$(CYTOOL) run cy_tools_samples/debugging/breakpoint.pyx@main
 	#$(CYTOOL) debug cy_tools_samples/debugging/segfault.pyx@main
-	$(CYTOOL) debug cy_tools_samples/debugging/errors.pyx@main:45
+	$(CYTOOL) debug cy_tools_samples/debugging/breakpoint.pyx@main --cygdb-verbosity=4
 
 annotate-file: build-debug
 	$(CYTOOL) annotate cy_tools_samples/low_level/dynamic_memory.pyx --browser

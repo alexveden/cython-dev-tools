@@ -2300,6 +2300,7 @@ class ExecutionControlCommandBase(gdb.Command):
         of source code or the result of the last executed gdb command (passed
         in as the `result` argument).
         """
+        TRACE("libpython: finish_executing >>>", 3)
         output_on_halt, output_always = self.filter_output(result)
 
         if self.stopped():
@@ -2307,8 +2308,9 @@ class ExecutionControlCommandBase(gdb.Command):
             print(output_on_halt)
         else:
             frame = gdb.selected_frame()
-            source_line = self.lang_info.get_source_line(frame)
+            source_line = None
             if self.lang_info.is_relevant_function(frame):
+                source_line = self.lang_info.get_source_line(frame)
                 raised_exception = self.lang_info.exc_info(frame)
                 if raised_exception:
                     print(raised_exception)
@@ -2319,6 +2321,7 @@ class ExecutionControlCommandBase(gdb.Command):
                 print(source_line)
             else:
                 print(result)
+        TRACE("libpython: finish_executing <<<", 3)
 
     def _finish(self):
         """
