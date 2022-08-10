@@ -1373,13 +1373,16 @@ class CyLocals(CythonCommand):
             return
 
         local_cython_vars = cython_function.locals
-        max_name_length = len(max(local_cython_vars, key=len))
-        for name, cyvar in sorted(local_cython_vars.items(), key=sortkey):
-            if self.is_initialized(self.get_cython_function(), cyvar.name):
-                value = gdb.parse_and_eval(cyvar.cname)
-                if not value.is_optimized_out:
-                    self.print_gdb_value(cyvar.name, value,
-                                         max_name_length, '')
+        if local_cython_vars:
+            max_name_length = len(max(local_cython_vars, key=len))
+            for name, cyvar in sorted(local_cython_vars.items(), key=sortkey):
+                if self.is_initialized(self.get_cython_function(), cyvar.name):
+                    value = gdb.parse_and_eval(cyvar.cname)
+                    if not value.is_optimized_out:
+                        self.print_gdb_value(cyvar.name, value,
+                                             max_name_length, '')
+        else:
+            print('No locals')
 
 
 class CyGlobals(CyLocals):
