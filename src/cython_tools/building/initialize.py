@@ -21,6 +21,7 @@ def initialize_command(args):
     """
     Main entry point for shell command
     """
+    log.setup('cython_tools__initialize', verbosity=args.verbose)
     initialize(
             project_root=args.project_root,
             force=args.force,
@@ -55,14 +56,6 @@ def initialize(project_root: str,
 
     if not os.path.exists(project_root):
         os.makedirs(project_root)
-    elif not force:
-        raise ValueError(f'Project root already exists: {project_root}, try with `force` flag')
-    if os.path.exists(os.path.join(project_root, 'setup.py')):
-        if not force:
-            raise FileExistsError(f'setup.py already exists in project root, try with `force` flag to rewrite')
-    if os.path.exists(os.path.join(project_root, 'Makefile')):
-        if not force:
-            raise FileExistsError(f'Makefile already exists in project root, try with `force` flag to rewrite')
 
     cy_tools_dir_path = os.path.join(project_root, CYTHON_TOOLS_DIRNAME)
 
@@ -74,10 +67,9 @@ def initialize(project_root: str,
 
     boiler_plate_dir = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '_boilerplate_package'))
 
-    shutil.copy(os.path.join(boiler_plate_dir, 'setup.py'),
-                os.path.join(project_root, 'setup.py'))
-    shutil.copy(os.path.join(boiler_plate_dir, 'Makefile'),
-                os.path.join(project_root, 'Makefile'))
+    if not os.path.exists(os.path.join(project_root, 'Makefile')):
+        shutil.copy(os.path.join(boiler_plate_dir, 'Makefile'),
+                    os.path.join(project_root, 'Makefile'))
 
     os.makedirs(cy_tools_dir_path)
     if include_samples:

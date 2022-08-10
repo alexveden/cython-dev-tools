@@ -26,7 +26,7 @@ def main(argv=None):
     #
     parser_initialize = subparsers.add_parser('initialize',
                                               description='Initializes cython tools project root')
-    parser_initialize.add_argument('project-root', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_initialize.add_argument('project_root', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_initialize.add_argument('--force', '-f', action='store_true', help='Force replacing cython tools project files (can be dangerous)')
     parser_initialize.add_argument('--include-samples', '-s', action='store_true', help='Copy sample files for experimenting')
     parser_initialize.add_argument('--include-boilerplate', '-b', action='store_true', help='Make typical cython project')

@@ -24,7 +24,7 @@ mkdir init_project
 cd init_project
 
 # Initialize cython tools project files
-cytool initialize --include-samples --include-boilerplate --boilerplate_name=cytoolz 
+cytool initialize . --include-samples --include-boilerplate --boilerplate-name=cytoolz 
 
 # The initialize commands will setup a simple package with core code and tests at ./cytools dir
 # also at `cy_tools_sample` directory you can find samples
@@ -68,7 +68,8 @@ and PipEnv.
 
 To figure out whether your modules compiled with debug info check the `d` in the file name, 
 like this: cy_memory_unsafe.cpython-39**d**-x86_64-linux-gnu.so, python interpreter should
-be like `python3.6-dbg` or `python3.6d`.  
+be like `python3.6-dbg` or `python3.6d`.
+
 
 ### Launching debug session
 ```
@@ -104,6 +105,21 @@ cytool debug --help
 
 Check the `cy_tools_samples/debugging/` for more tricks on how to set breakpoints,
 c-style (not python!) asserts and debug them.
+
+### Debugging the debugger
+This functionality is still under development, so expect bugs everywhere.
+
+However, this is a hit list:
+1. Make sure that you are using debug version of python
+2. Make sure that the current build is debug, try to force rebuild
+```
+cytool build --debug --force
+```
+3. Ramp up verbosity
+```
+cytool -vvvv debug cy_tools_samples/debugging/abort.pyx@main --cygdb-verbosity=3
+```
+4. Don't hesitate to fill an issue on GitHub!
 
 ## Code coverage
 Install the boilerplate project `cytool initialize --include-boilerplate`, this package

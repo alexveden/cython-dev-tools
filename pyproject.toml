@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cython-tools"
-version = "1.0.0"
+version = "0.6.4"
 description = "Cython development toolkit (debugger, profiler, coverage, unit tests)"
 readme = "README.md"
 authors = [{ name = "Alex Veden", email = "i@alexveden.com" }]
@@ -24,11 +24,9 @@ dependencies = [
 ]
 requires-python = ">=3.6"
 
-[project.optional-dependencies]
-dev = ["bumpver", "pip-tools", "pytest"]
 
 [project.urls]
 Homepage = "https://github.com/alexveden/cython-tools"
 
 [project.scripts]
-realpython = "reader.__main__:main"
+cytool = "cython_tools.cytools:main"
