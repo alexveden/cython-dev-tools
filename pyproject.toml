@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cython-tools"
-version = "0.6.4"
+version = "0.6.5"
 description = "Cython development toolkit (debugger, profiler, coverage, unit tests)"
 readme = "README.md"
 authors = [{ name = "Alex Veden", email = "i@alexveden.com" }]
