@@ -17,4 +17,5 @@ cdef extern from "mymath.h":
 
 cpdef call_sinc():
     print('Calling mymath: sinc(10)')
-    print(sinc(10.0))
+    cdef double res = sinc(10.0)
+    print(res)
