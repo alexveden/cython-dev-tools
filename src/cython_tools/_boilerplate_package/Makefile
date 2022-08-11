@@ -4,7 +4,7 @@ p ?= $(PROJ_ROOT)
 #GDB_EXECUTABLE:=/usr/local/bin/gdb13
 GDB_EXECUTABLE:=gdb
 
-CYTOOL:=./cytool
+CYTOOL:=cytool
 
 # Python execution which should be used for building module, in debug mode
 #   Typically original python is fine for debugging cython modules, but if you need more debug info (python symbols)
@@ -24,7 +24,7 @@ build:
 build-debug:
 	$(CYTOOL) build --debug --annotate
 
-tests: build
+tests: build-debug
 	export PYTHONPATH=$(PROJ_ROOT):$(PYTHONPATH); python -m $(TEST_EXEC) $(p)
 
 run:
@@ -32,6 +32,9 @@ run:
 
 debug: build-debug
 	$(CYTOOL) debug cy_tools_samples/low_level/arrays_resize.pyx@main
+
+debug-tests: build-debug
+	$(CYTOOL) debug -t $(p)
 
 debug-file: build-debug
 	#$(CYTOOL) run cy_tools_samples/debugging/abort.pyx@main

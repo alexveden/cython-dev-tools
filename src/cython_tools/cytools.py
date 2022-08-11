@@ -98,6 +98,7 @@ def main(argv=None):
                                    f'-b package/sub_package/module.pyx:23 - line breakpoint by path (only Cython)\n'
                                    f'-b package/sub_package/module.pyx:SomeClass.meth - class method breakpoint by path\n'
                               )
+    parser_debug.add_argument('--pytest', '-t', action='store_true', help='Run tests in pytest environment')
     parser_debug.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_debug.add_argument('--cygdb-verbosity', type=int, default=0,
                               help=f'Print more debug information when in GDB, integer [0, 4]. Typically only used to debug the debugger')

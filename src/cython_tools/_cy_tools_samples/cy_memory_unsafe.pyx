@@ -18,6 +18,8 @@ cdef class TestClass:
         print('World')
         #print('Hey')
 
+cpdef main_void(int a, int b):
+    r = a + b
 
 cpdef main_add(int a, int b):
     return b + a

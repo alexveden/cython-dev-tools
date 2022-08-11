@@ -17,18 +17,20 @@ def debug_command(args):
           project_root=args.project_root,
           cygdb_verbosity=args.cygdb_verbosity,
           breakpoints_list=args.breakpoint,
+          pytest=args.pytest,
           )
 def debug(
         debug_target,
         project_root: str = None,
         cygdb_verbosity=0,
         breakpoints_list=None,
+        pytest = False
         ):
 
     # Check if cython tools in a good state in the project root
     project_root, cython_tools_path = check_project_initialized(project_root)
 
-    tempfilename = make_command_file(debug_target, project_root, cython_tools_path, cygdb_verbosity, breakpoints_list or [])
+    tempfilename = make_command_file(debug_target, project_root, cython_tools_path, cygdb_verbosity, breakpoints_list or [], pytest)
 
     with open(tempfilename) as tempfile:
         p = subprocess.Popen(['gdb', '-command', tempfilename])
@@ -98,34 +100,43 @@ def validate_breakpoint(project_root, break_point_definition: str):
         raise NotImplementedError(f'Unsupported breakpoint type :{type(break_point)} -> {break_point}')
 
 
-def make_command_file(debug_target, project_root, cython_tools_path, cygdb_verbosity, break_points_list):
+def make_command_file(debug_target, project_root, cython_tools_path, cygdb_verbosity, break_points_list, pytest):
     log.trace(f'Preparing GDB debug command file')
 
     if debug_target.count('@') > 1:
         raise ValueError(f'Only one @ entry point character is allowed, got {debug_target}')
     if debug_target.count(':') > 1:
         raise ValueError(f'Only one : break point character is allowed, got {debug_target}')
+    break_list = []
+
 
     toks = debug_target.split(':')
     bp_target = toks[0].split('@')[0]
-    break_list = []
-    if len(toks) == 2:
-        break_list.append(bp_target + ':' + toks[1])
+
+    if not pytest:
+        if len(toks) == 2:
+            break_list.append(bp_target + ':' + toks[1])
+
     for b in break_points_list:
         if ':' not in b:
             # Possibly entry file breakpoint
             break_list.append(bp_target + ':' + b)
         else:
             break_list.append(b)
-
+    cy_breakpoint = '\n'.join([validate_breakpoint(project_root, bp) for bp in break_list if bp])
     log.trace(f'Breakpoints passed: {break_list}')
 
-    source_file, package, entry_method = find_package_path(project_root, toks[0])
-    log.trace(f'Entry point: file://{source_file} package: {package} entry_method: {entry_method}')
+    if pytest and os.path.isdir(os.path.join(project_root, toks[0])):
+        source_file = os.path.join(project_root, toks[0])
+        # These should be unused
+        package = entry_method = None
+        log.trace(f'Tests Entry point: file://{source_file}')
+    else:
+        source_file, package, entry_method = find_package_path(project_root, toks[0], as_entry=not pytest)
+        log.trace(f'Entry point: file://{source_file} package: {package} entry_method: {entry_method}')
 
-    cy_breakpoint = '\n'.join([validate_breakpoint(project_root, bp) for bp in break_list if bp])
+    run_instruct = ' '.join(make_run_args(source_file, package, entry_method, escape=True, pytest=pytest))
 
-    run_instruct = ' '.join(make_run_args(source_file, package, entry_method, escape=True))
 
     pattern = os.path.join(cython_tools_path,
                            'cython_debug',

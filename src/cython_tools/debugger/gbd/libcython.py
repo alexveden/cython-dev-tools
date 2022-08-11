@@ -76,6 +76,71 @@ PythonObject = 'PythonObject'
 _data_types = dict(CObject=CObject, PythonObject=PythonObject)
 _filesystemencoding = sys.getfilesystemencoding() or 'UTF-8'
 
+import re
+RE_WRAPPER_F = re.compile(r"^static .*(?P<func>__pyx_pw_[A-Za-z\d_]+)\(.*\).*$", re.MULTILINE)
+RE_C_FUNC = re.compile(r"^\s*__pyx_r\s+=.*(?P<c_func>__pyx_pf_[A-Za-z\d_]+)\(.*;", re.MULTILINE)
+RE_C_DEALLOC = re.compile(r"^\s*(?P<c_func>__pyx_pf_[A-Za-z\d_]+__dealloc__)\(.*\);$", re.MULTILINE)
+RE_RETURN_F = re.compile(r"^\s*return\s+__pyx_r;$", re.MULTILINE)
+
+def get_cython_wrappers(src_file):
+    """
+    Parses source files to get core Cython function from Cython wrapper
+    '__pyx_pw_13MemPoolQuotes_1__init__' -> '__pyx_pf_13MemPoolQuotes___init__'
+    """
+    wrapper_map = {}
+    if not os.path.exists(src_file):
+        TRACE(f'No source file: {src_file} or abandoned files in .cython_tools/cython_debug/ folder')
+        return wrapper_map
+
+    with open(src_file, 'r') as fh:
+        lines = fh.readlines()
+
+        proto_name = None
+        wrapped_func = None
+        is_dealloc = False
+        has_entry = False
+
+        for l in lines:
+            if not has_entry:
+                reg = RE_WRAPPER_F.match(l)
+                if reg:
+                    # print(f'#: {l}')
+                    if not proto_name:
+                        if ';' in l and '/*proto*/' in l:
+                            proto_name = reg['func']
+                            if proto_name.endswith('__dealloc__'):
+                                is_dealloc = True;
+                            continue
+                    else:
+                        if reg['func'] == proto_name and '{' in l:
+                            #print(l)
+                            has_entry = True
+                        else:
+                            has_entry = False
+                            proto_name = None
+                            wrapped_func = None
+                            is_dealloc = False;
+                            # print(f'invalid proto: {l}')
+            else:
+                if is_dealloc:
+                    reg = RE_C_DEALLOC.match(l)
+                    if reg:
+                        wrapped_func = reg['c_func']
+                else:
+                    reg = RE_C_FUNC.match(l)
+                    if reg:
+                        wrapped_func = reg['c_func']
+
+            if RE_RETURN_F.match(l) or wrapped_func:
+                if proto_name and wrapped_func:
+                    wrapper_map[proto_name] = wrapped_func
+
+                # Func return
+                proto_name = None
+                has_entry = False
+                wrapped_func = None
+                is_dealloc = False;
+    return wrapper_map
 
 # decorators
 
@@ -234,6 +299,7 @@ class CythonBase(object):
 
     @default_selected_gdb_frame()
     def get_cython_function(self, frame):
+        TRACE(f'CythonBase.get_cython_function(): {frame.name()}', 3)
         result = self.cy.functions_by_cname.get(frame.name())
         if result is None:
             if frame.name() == 'raise':
@@ -262,20 +328,28 @@ class CythonBase(object):
         Get the current Cython line number. Returns 0 if there is no
         correspondence between the C and Cython code.
         """
+        TRACE(f'CythonBase.get_cython_lineno(): {frame.name()} \n>>>', 3)
         cyfunc = self.get_cython_function(frame)
         frame_line = self.get_c_lineno(frame)
+
+        TRACE(f'CythonBase.get_cython_lineno(): cyfunc={cyfunc.name}, c_line={os.path.basename(cyfunc.module.c_filename)}:{frame_line}', 3)
+
         fn_and_line_no = cyfunc.module.lineno_c2cy.get(frame_line, None)
         if fn_and_line_no is None:
             # Debug
-            TRACE(f'get_cython_lineno: Cython line not found: {cyfunc}:{frame_line}', 1)
+            TRACE(f'get_cython_lineno: Cython line not found: {cyfunc.name}:{frame_line}', 1)
             return (cyfunc.module.c_filename, frame_line)
+
+        TRACE(f'CythonBase.get_cython_lineno(): fn_and_line_no=({fn_and_line_no})', 3)
+        TRACE(f'CythonBase.get_cython_lineno(): \n<<<<', 3)
         return fn_and_line_no
 
     @default_selected_gdb_frame()
     def get_source_desc(self, frame):
 
         frame_name = frame.name()
-        TRACE(f'libcython get_source_desc() - frame: `{frame_name}`', 2)
+        cython_frame = frame
+        TRACE(f'CythonBase.get_source_desc() - frame: `{frame_name}`', 2)
         if frame_name.startswith('__pyx_pf_'):
             # For `def` functions Cython generates 2 types of functions:
             #  __pyx_pf_8examples_16cy_memory_unsafe_2hello  (which is typically in current frame)
@@ -285,18 +359,18 @@ class CythonBase(object):
                 older_frame = gdb.selected_frame().older()
                 older_frame_name = older_frame.name()
                 # Possibly a wrapper of the same function
-                if older_frame_name.startswith('__pyx_pw_'):
-                    frame = older_frame
+                if older_frame_name.startswith('__pyx_pw_') and self.is_cython_function(older_frame):
+                    cython_frame = older_frame
 
         filename = lineno = lexer = None
-        if self.is_cython_function(frame):
-            TRACE(f'get_source_desc(): is_cython_function', 2)
+        if self.is_cython_function(cython_frame):
+            TRACE(f'CythonBase.get_source_desc(): is_cython_function', 2)
             filename = self.get_cython_function(frame).module.filename
             filename_and_lineno = self.get_cython_lineno(frame)
             #print(f'get_cython_lineno: {filename_and_lineno}')
             if filename_and_lineno[0].endswith('.c'):
                 # Cython code is not mapped, because probably calling internal MACROS
-                TRACE(f'Got macro call: its safe to do `cy next`')
+                TRACE(f'CythonBase.get_source_desc(): Got macro call: its safe to do `cy next`', 2)
                 filename = filename_and_lineno[0]
                 lineno = filename_and_lineno[1]
                 if pygments:
@@ -307,7 +381,7 @@ class CythonBase(object):
                 if pygments:
                     lexer = pygments.lexers.CythonLexer(stripall=False)
         elif self.is_python_function(frame):
-            TRACE(f'get_source_desc(): is_python_function', 2)
+            TRACE(f'CythonBase.get_source_desc(): is_python_function', 2)
             pyframeobject = libpython.Frame(frame).get_pyop()
 
             if not pyframeobject:
@@ -320,8 +394,8 @@ class CythonBase(object):
             if pygments:
                 lexer = pygments.lexers.PythonLexer(stripall=False)
         else:
-            TRACE(f'get_source_desc(): is_C_function', 2)
-            TRACE(f'Available cython func: {self.cy.functions_by_cname.keys()}', 2)
+            TRACE(f'CythonBase.get_source_desc(): is_C_function', 2)
+            TRACE(f'CythonBase.get_source_desc(): Available cython func: {self.cy.functions_by_cname.keys()}', 2)
             if DEBUG_TRACE > 4:
                 breakpoint()
             filename, lexer, lineno = self.get_c_lexer(frame)
@@ -845,6 +919,12 @@ class CyImport(CythonCommand):
 
             for module in t.getroot():
                 cython_module = CythonModule(**module.attrib)
+                src_path = module.attrib['filename']
+                c_src_path = module.attrib['c_filename']
+                pw_func_map = get_cython_wrappers(c_src_path)
+                TRACE(f'Module src: {src_path}', 3)
+                TRACE(f'Module src .c: {c_src_path}', 3)
+                TRACE(f'Module wrappers: {pw_func_map}', 3)
                 self.cy.cython_namespace[cython_module.name] = cython_module
 
                 for variable in module.find('Globals'):
@@ -862,15 +942,20 @@ class CyImport(CythonCommand):
 
                     self.cy.functions_by_name[name].append(cython_function)
                     self.cy.functions_by_qualified_name[cython_function.qualified_name] = cython_function
-                    self.cy.functions_by_cname[cython_function.cname] = cython_function
-                    # if cython_function.cname.startswith('__pyx_pw_'):
-                    #     # Add also __pyx_pf_* version for proper frame mapping
-                    #     __pyx_pf_func = cython_function.cname.replace('__pyx_pw_', '__pyx_pf_')
-                    #     self.cy.functions_by_cname[__pyx_pf_func] = cython_function
 
+                    # Map correct code with real C-implementation, exlclude Python wrapper functions!
                     TRACE(f'`cy import`: Function: {name}')
                     TRACE(f'`cy import`: \tQualName: {cython_function.qualified_name}')
-                    TRACE(f'`cy import`: \tCName: {cython_function.cname}')
+
+                    if cython_function.cname in pw_func_map:
+                        mapped_f = pw_func_map[cython_function.cname]
+                        self.cy.functions_by_cname[mapped_f] = cython_function
+                        TRACE(f'`cy import`: \tCName: {cython_function.cname} -> mapped to : {mapped_f}')
+                    else:
+                        self.cy.functions_by_cname[cython_function.cname] = cython_function
+                        TRACE(f'`cy import`: \tCName: {cython_function.cname}')
+
+
 
                     d = cython_module.functions[qname] = cython_function
 
@@ -884,7 +969,7 @@ class CyImport(CythonCommand):
 
                     cython_function.arguments.extend(
                         funcarg.tag for funcarg in function.find('Arguments'))
-                src_path = module.attrib['filename']
+
                 TRACE(f'`cy import`: \tC source: {src_path}')
 
                 for marker in module.find('LineNumberMapping'):
@@ -1051,6 +1136,7 @@ class CythonInfo(CythonBase, libpython.PythonInfo):
     """
 
     def lineno(self, frame):
+        TRACE(f'CythonInfo.lineno: {frame.name()}', 3)
         # Take care of the Python and Cython levels. We need to care for both
         # as we can't simply dispatch to 'py-step', since that would work for
         # stepping through Python code, but it would not step back into Cython-
@@ -1067,6 +1153,7 @@ class CythonInfo(CythonBase, libpython.PythonInfo):
         return super(CythonInfo, self).lineno(frame)
 
     def get_source_line(self, frame):
+        TRACE(f'CythonInfo.get_source_line: {frame.name()}', 3)
         try:
             line = super(CythonInfo, self).get_source_line(frame)
         except gdb.GdbError:

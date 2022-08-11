@@ -12,7 +12,7 @@ RE_PY_PACKAGE = re.compile(r"^[A-Za-z\d\._]+$", re.MULTILINE)
 RE_ANY_CLASS = re.compile(r"(^cdef +|^)class +[A-Za-z\d_]+(:|\()", re.MULTILINE)
 
 
-def make_run_args(code_file, package, entry_method, escape=False) -> List[str]:
+def make_run_args(code_file, package, entry_method, escape=False, pytest=False) -> List[str]:
     """
     Simple python arguments to run package by path
 
@@ -24,12 +24,19 @@ def make_run_args(code_file, package, entry_method, escape=False) -> List[str]:
     assert os.path.exists(code_file), f'{code_file} not exists'
 
     if entry_method is None:
-        return ['-m', f'{package}']
-    else:
-        if escape:
-            return ['-c', f'"import {package}; {package}.{entry_method}();"']
+        if pytest:
+            return ['-m', 'pytest', f'{code_file}']
         else:
-            return ['-c', f'import {package}; {package}.{entry_method}();']
+            return ['-m', f'{package}']
+    else:
+        if pytest:
+            assert not code_file.endswith('.py'), f'Debug test entry point must be a python file!'
+            return ['-m', 'pytest', f'{code_file}', '-k', entry_method]
+        else:
+            if escape:
+                return ['-c', f'"import {package}; {package}.{entry_method}();"']
+            else:
+                return ['-c', f'import {package}; {package}.{entry_method}();']
 
 
 def check_method_args(args_str: str):

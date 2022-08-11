@@ -4,6 +4,7 @@ import shutil
 import sys
 from cython_tools.logs import log
 from cython_tools.common import check_project_initialized, parse_input
+from cython_tools.settings import CYTHON_TOOLS_DIRNAME
 from cython_tools.building.build import RE_IS_CYTHON
 
 
@@ -47,6 +48,10 @@ def clean(project_root: str = None,
     files_to_delete = []
 
     build_dir = os.path.join(project_root, 'build')
+
+    if os.path.exists(os.path.join(project_root, CYTHON_TOOLS_DIRNAME, 'cython_debug')):
+        shutil.rmtree(os.path.join(project_root, CYTHON_TOOLS_DIRNAME, 'cython_debug'))
+
 
     for pyx in glob.glob(os.path.join(project_root, '**', '**.pyx'), recursive=True):
         base_name = pyx[:-4]
