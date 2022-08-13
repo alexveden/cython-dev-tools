@@ -61,11 +61,14 @@ def coverage(tests_target: str = '.',
     cython_tools.building.build(project_root, is_debug=True)
 
     # Step 2: make a .coveragerc file with Cython plugin record
-
+    # include = {project_root}/*.pyx
     with open(cy_tools_coverage_rc, 'w') as fh:
-        fh.write("""
+        fh.write(f"""
 [run]
-plugins = Cython.Coverage
+plugins = cython_tools.testing.coverage_plugin
+#source = {project_root}
+#source_pkgs = uberhf.datafeed.mem_pool_quotes
+#debug = plugin, trace, dataio
         """)
 
     # Step 3: run a bunch of tests

@@ -13,7 +13,8 @@ from unittest import mock
 import re
 import json
 
-
+RE_HAS_DEFINE_MACRO = re.compile(r"^#\s+distutils:\s+define_macros=.*", re.MULTILINE)
+RE_IS_DEF_CODE_LINE = re.compile(r"( +|^)[^#]def.*$", re.MULTILINE)
 RE_CYTHON_SRC = re.compile(r".*\/\* BEGIN: Cython Metadata((?P<cython_meta>.*))END: Cython Metadata \*\/.*", re.DOTALL)
 RE_IS_CYTHON = re.compile(r".*\/\*\sGenerated\sby\sCython\s.*\*\/.*", re.DOTALL)
 
@@ -59,9 +60,11 @@ def build(project_root: str = None,
     if project_extensions is None:
         # No setup.py or nothing for building it in python
         project_extensions = [
-            Extension("*", ["**/*.pyx"],
+            Extension("*",
+                      ["**/*.pyx"],
                       # get rid of weird Numpy API warnings
                       define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+                      include_dirs= [project_root, np.get_include()],
                       ),
         ]
         cythonize_kwargs = dict(
@@ -76,6 +79,8 @@ def build(project_root: str = None,
         debug_cythonize_kw = dict(gdb_debug=True,
                                   # cython_debug files output for GDB mapping
                                   output_dir=cython_tools_path,
+                                  # TODO: decide if include path works
+                                  include_path=cythonize_kwargs.get('include_path', []) + [project_root],
                                   compiler_directives={'linetrace': True, 'profile': True, 'binding': True})
         log.trace(f'debug_macros: {debug_macros}')
         log.trace(f'debug_cythonize_kw: {debug_cythonize_kw}')
@@ -98,6 +103,9 @@ def build(project_root: str = None,
                 if not has_found:
                     ext.define_macros.append(dbg_m)
             log.trace(f'\tafter: {ext.define_macros}')
+
+
+
 
         # Updating cythonize kw
         cythonize_kwargs.update(debug_cythonize_kw)
@@ -174,7 +182,26 @@ def check_force_rebuild(ext_name: str, ext_sources: List[str], requested_is_debu
             log.trace(f'extension pattern excludes .pyx, skipping')
             continue
 
-        for fn in glob.glob(src_pattern):
+        for fn in glob.glob(src_pattern, recursive=True):
+            # Check for # distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
+            if requested_is_debug:
+                with open(fn, 'r') as fh:
+                    lines = fh.readlines()
+                    for l in lines:
+                        if RE_HAS_DEFINE_MACRO.match(l):
+                            # Check if debug macros are defined!
+                            if "CYTHON_TRACE_NOGIL=1" not in l or "CYTHON_TRACE=1" not in l:
+                                raise RuntimeError(f'Unsupported macro definition in file {fn}\n'
+                                                   f'This file contains `# distutils: define_macros=` instruction which overrides debug information,'
+                                                   f'you will get no coverage and possible artifacts in debugging. \n'
+                                                   f'Please set CYTHON_TRACE_NOGIL=1 and CYTHON_TRACE=1 in this header, or refactor the code to setup.py, '
+                                                   f'or just remove and let the cython tools take care of it.')
+                            else:
+                                break
+                        if RE_IS_DEF_CODE_LINE.match(l):
+                            # nothing interesting, the code begins, just skip
+                            break
+
             c_src = fn[:-4] + '.c'
             if not os.path.exists(c_src):
                 # .c file is not created, but this doesn't mean that we need to force

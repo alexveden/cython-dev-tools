@@ -49,6 +49,8 @@ def run(run_target,
             elif ret == -11:
                 # Segmentation fault
                 log.critical(f'Python SEGMENTATION FAULT during running: {run_target} ErrCode: {ret}, try to run with `debug` command')
+            elif  ret == -5:
+                log.critical(f'Python POSSIBLE unhandled breakpoint during running: {run_target} ErrCode: {ret}, try to run with `debug` command')
             else:
                 log.error(f'Python returned error while running: {run_target} ErrCode: {ret}')
         except KeyboardInterrupt:
