@@ -78,7 +78,12 @@ plugins = cython_tools.testing.coverage_plugin
     # Run tests relative to project root!
     os.chdir(project_root)
 
-    coverage_main(['run', f'--data-file={cy_tools_coverage_data}', f'--rcfile={cy_tools_coverage_rc}', '-m', coverage_engine, tests_target])
+    # Place this junk into cython tools dir
+    # TODO: add it to the test runner too
+    pytest_cache_dir = os.path.join(cython_tools_path, '.pytest_cache')
+
+    coverage_main(['run', f'--data-file={cy_tools_coverage_data}', f'--rcfile={cy_tools_coverage_rc}',
+                   '-m', coverage_engine, f'--override-ini=cache_dir={pytest_cache_dir}', '-q', tests_target])
 
     log.trace(f'Producing HTML file: {cy_tools_coverage_html}')
     title = f'Cython Tools Coverage at {datetime.now()}'
