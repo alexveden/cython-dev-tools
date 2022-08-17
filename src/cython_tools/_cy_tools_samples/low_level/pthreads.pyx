@@ -44,8 +44,6 @@ cpdef main():
     cdef char * test_args = "thread_args!"
 
     cdef retval = pthread_create(&thread, NULL, &logger, test_args)
-
-
     if retval != 0:
         printf('pthread_create error: %s\n', strerror(errno))
         exit(1)

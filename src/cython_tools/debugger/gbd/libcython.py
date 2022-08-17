@@ -581,7 +581,7 @@ class CythonBase(object):
         return result
 
     def print_gdb_value(self, name, value, max_name_length=None, prefix=''):
-        if libpython.pretty_printer_lookup(value):
+        if isinstance(value, str) or libpython.pretty_printer_lookup(value):
             typename = ''
         else:
             typename = '(%s) ' % (value.type,)
@@ -1464,9 +1464,13 @@ class CyLocals(CythonCommand):
             max_name_length = len(max(local_cython_vars, key=len))
             for name, cyvar in sorted(local_cython_vars.items(), key=sortkey):
                 if self.is_initialized(self.get_cython_function(), cyvar.name):
-                    value = gdb.parse_and_eval(cyvar.cname)
-                    if not value.is_optimized_out:
-                        self.print_gdb_value(cyvar.name, value,
+                    try:
+                        value = gdb.parse_and_eval(cyvar.cname)
+                        if not value.is_optimized_out:
+                            self.print_gdb_value(cyvar.name, value,
+                                                 max_name_length, '')
+                    except Exception as exc:
+                        self.print_gdb_value(cyvar.name, "Err: " + str(exc),
                                              max_name_length, '')
         else:
             print('No locals')
