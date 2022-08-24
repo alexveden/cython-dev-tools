@@ -87,13 +87,7 @@ C_FILE_EXTENSIONS = ['.c', '.cpp', '.cc', '.cxx']
 MODULE_FILE_EXTENSIONS = set(['.py', '.pyx', '.pxd'] + C_FILE_EXTENSIONS)
 
 
-def _find_c_source(base_path):
-    file_exists = os.path.exists
-    for ext in C_FILE_EXTENSIONS:
-        file_name = base_path + ext
-        if file_exists(file_name):
-            return file_name
-    return None
+
 
 
 def _find_dep_file_path(main_file, file_path, relative_path_search=False):
@@ -125,6 +119,9 @@ class Plugin(CoveragePlugin):
     # list of regex patterns for lines to exclude
     _excluded_line_patterns = ()
 
+    _cytools_project_root = None
+    _cytools_project_src = None
+
     def sys_info(self):
         return [('CyTools', '0.6.4')]
 
@@ -132,6 +129,29 @@ class Plugin(CoveragePlugin):
         # Entry point for coverage "configurer".
         # Read the regular expressions from the coverage config that match lines to be excluded from coverage.
         self._excluded_line_patterns = config.get_option("report:exclude_lines")
+        #breakpoint()
+        self._cytools_project_root = config.get_option("cython_tools.testing.coverage_plugin:project_root")
+        self._cytools_project_src = config.get_option("cython_tools.testing.coverage_plugin:project_src")
+
+        # print('*' * 100)
+        # print(self._cytools_project_src)
+        # print(self._cytools_project_root)
+        # print('*'*100)
+
+    def _find_c_source(self, base_path):
+        file_exists = os.path.exists
+        for ext in C_FILE_EXTENSIONS:
+            file_name = base_path + ext
+            if file_exists(file_name):
+                return file_name
+            if self._cytools_project_src is not None and self._cytools_project_root is not None:
+                _f2 = self._cytools_project_root
+                if _f2 in base_path:
+                    _f2 = base_path.replace(_f2, self._cytools_project_src)
+                    file_name = _f2 + ext
+                    if file_exists(file_name):
+                        return file_name
+        return None
 
     # def find_executable_files(self, src_dir):
     #     if not os.path.exists(src_dir):
@@ -225,14 +245,14 @@ class Plugin(CoveragePlugin):
             # none of our business
             return None, None
 
-        c_file = filename if ext in C_FILE_EXTENSIONS else _find_c_source(basename)
+        c_file = filename if ext in C_FILE_EXTENSIONS else self._find_c_source(basename)
         if c_file is None:
             # a module "pkg/mod.so" can have a source file "pkg/pkg.mod.c"
             package_root = find_root_package_dir.uncached(filename)
             package_path = os.path.relpath(basename, package_root).split(os.path.sep)
             if len(package_path) > 1:
                 test_basepath = os.path.join(os.path.dirname(filename), '.'.join(package_path))
-                c_file = _find_c_source(test_basepath)
+                c_file = self._find_c_source(test_basepath)
 
         py_source_file = None
         if c_file:

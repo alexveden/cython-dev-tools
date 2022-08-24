@@ -25,7 +25,7 @@ build-debug:
 	$(CYTOOL) build --debug --annotate
 
 tests: build-debug
-	export PYTHONPATH=$(PROJ_ROOT):$(PYTHONPATH); python -m $(TEST_EXEC) $(p)
+	export PYTHONPATH=$(PROJ_ROOT):$(PYTHONPATH); python -m $(TEST_EXEC) --override-ini=cache_dir=$(PROJ_ROOT)/.cython_tools/.pytest_cache $(p)
 
 run:
 	$(CYTOOL) run cy_tools_samples/cy_memory_unsafe.pyx@main

@@ -12,6 +12,8 @@ import glob
 from unittest import mock
 import re
 import json
+from Cython.Compiler import Options
+
 
 RE_HAS_DEFINE_MACRO = re.compile(r"^#\s+distutils:\s+define_macros=.*", re.MULTILINE)
 RE_IS_DEF_CODE_LINE = re.compile(r"( +|^)[^#]def.*$", re.MULTILINE)
@@ -47,12 +49,18 @@ def build(project_root: str = None,
     os.chdir(os.path.abspath(project_root))
     log.trace(os.getcwd())
 
+    lib_directory = os.path.join(cython_tools_path, "lib")
+
     if project_root not in sys.path:
         log.trace(f'Adding {project_root} to PYTHONPATH')
+        #sys.path.append(lib_directory)
         sys.path.append(project_root)
+
 
     project_extensions = None
     cythonize_kwargs = None
+
+
 
     if os.path.exists(os.path.join(project_root, 'setup.py')):
         project_extensions, cythonize_kwargs = load_extensions_from_setup()
@@ -65,6 +73,8 @@ def build(project_root: str = None,
                       # get rid of weird Numpy API warnings
                       define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
                       include_dirs= [project_root, np.get_include()],
+                      #library_dirs=[lib_directory],
+                      #extra_link_args=[f"-Wl,-rpath={lib_directory}"],
                       ),
         ]
         cythonize_kwargs = dict(
@@ -112,7 +122,7 @@ def build(project_root: str = None,
 
     if not force:
         for ext in project_extensions:
-            force = check_force_rebuild(ext.name, ext.sources, requested_is_debug=is_debug)
+            force = check_force_rebuild(project_root, ext.name, ext.sources, requested_is_debug=is_debug)
             if force:
                 # Something triggered force, no need to loop through everything
                 log.info(f'Debug<->release version switch detected, forcing rebuild')
@@ -121,15 +131,20 @@ def build(project_root: str = None,
     # Ready to compile
     log.debug('Compiling and building')
     log.trace(f'cythonize_kwargs: {cythonize_kwargs}')
+    src_build_dir = os.path.join(cython_tools_path, 'src')
+    os.makedirs(src_build_dir, exist_ok=True)
 
     cythonize_kwargs['force'] = force
     cythonize_kwargs['annotate'] = annotate
+    cythonize_kwargs['build_dir'] = src_build_dir
 
     ext_modules = cythonize(project_extensions, **cythonize_kwargs)
 
     setup(name='Cython tools virtual ext',
           ext_modules=ext_modules,
-          script_args=['build_ext', '--inplace'])
+          script_args=['build_ext', '--inplace'],
+          #script_args=['build_ext', f'--build-lib={lib_directory}']
+          )
 
     os.chdir(prev_dir)
     log.info(f'Build completed')
@@ -141,6 +156,7 @@ def load_extensions_from_setup():
 
     :return:
     """
+
     project_extensions = cythonize_kwargs = None
     log.trace('Loading setup.py')
     # Prevent setup() function running!
@@ -169,7 +185,7 @@ def load_extensions_from_setup():
     return project_extensions, cythonize_kwargs
 
 
-def check_force_rebuild(ext_name: str, ext_sources: List[str], requested_is_debug: bool) -> bool:
+def check_force_rebuild(project_root: str, ext_name: str, ext_sources: List[str], requested_is_debug: bool) -> bool:
     """
     Checks all Cython .c sources to figure out their compilation instructions and compare with current build requirements.
 
@@ -177,6 +193,9 @@ def check_force_rebuild(ext_name: str, ext_sources: List[str], requested_is_debu
     we change from debug to release and vice versa. But always forcing is also burdensome, because rebuilding whole project may be time consuming.
     """
     log.debug(f'check_force_rebuild: Check if extension: {ext_name} needs rebuild')
+    project_root, cython_tools_path = check_project_initialized(project_root)
+    src_build_dir = os.path.join(cython_tools_path, 'src')
+
     for src_pattern in ext_sources:
         if not src_pattern.endswith('.pyx'):
             log.trace(f'extension pattern excludes .pyx, skipping')
@@ -205,7 +224,11 @@ def check_force_rebuild(ext_name: str, ext_sources: List[str], requested_is_debu
             c_src = fn[:-4] + '.c'
             if not os.path.exists(c_src):
                 # .c file is not created, but this doesn't mean that we need to force
-                continue
+                # Check cython tools src path
+                c_src = os.path.join(src_build_dir, c_src)
+                if not os.path.exists(c_src):
+
+                    continue
 
             log.trace(f'check_force_rebuild: {c_src}')
 

@@ -66,9 +66,13 @@ def coverage(tests_target: str = '.',
         fh.write(f"""
 [run]
 plugins = cython_tools.testing.coverage_plugin
-#source = {project_root}
+#source = {os.path.join(cython_tools_path, 'src')}
 #source_pkgs = uberhf.datafeed.mem_pool_quotes
 #debug = plugin, trace, dataio
+
+[cython_tools.testing.coverage_plugin]
+project_root={project_root}
+project_src={os.path.join(cython_tools_path, 'src')}
         """)
 
     # Step 3: run a bunch of tests
@@ -88,5 +92,6 @@ plugins = cython_tools.testing.coverage_plugin
     log.trace(f'Producing HTML file: {cy_tools_coverage_html}')
     title = f'Cython Tools Coverage at {datetime.now()}'
     coverage_main(['html', f'--data-file={cy_tools_coverage_data}', f'--rcfile={cy_tools_coverage_rc}', f'--title="{title}"', '-i', '-d', cy_tools_coverage_html])
+    #coverage_main(['xml', f'--data-file={cy_tools_coverage_data}', f'--rcfile={cy_tools_coverage_rc}', '-i', '-o',  cy_tools_coverage_html + '.xml'])
 
     return os.path.join(cy_tools_coverage_html, 'index.html')

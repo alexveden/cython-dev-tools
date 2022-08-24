@@ -55,6 +55,9 @@ def clean(project_root: str = None,
     if os.path.exists(os.path.join(project_root, CYTHON_TOOLS_DIRNAME, '.coverage_cytools.db')):
         os.unlink(os.path.join(project_root, CYTHON_TOOLS_DIRNAME, '.coverage_cytools.db'))
 
+    if os.path.exists(os.path.join(project_root, CYTHON_TOOLS_DIRNAME, 'src')):
+        shutil.rmtree(os.path.join(project_root, CYTHON_TOOLS_DIRNAME, 'src'))
+
     for pyx in glob.glob(os.path.join(project_root, '**', '**.pyx'), recursive=True):
         base_name = pyx[:-4]
 
