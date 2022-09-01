@@ -10,6 +10,7 @@ import cython_tools.building
 import cython_tools.debugger
 import cython_tools.testing
 import cython_tools.maintenance
+
 from cython_tools.settings import CYTHON_TOOLS_DIRNAME
 
 
@@ -104,7 +105,23 @@ def main(argv=None):
                               help=f'Print more debug information when in GDB, integer [0, 4]. Typically only used to debug the debugger')
     parser_debug.set_defaults(func=cython_tools.debugger.debug_command)
 
-
+    #
+    # `valgrind` command arguments
+    #
+    parser_valgrind = subparsers.add_parser('valgrind',
+                                            description='Checks memory leaks with Valgrind tool',
+                                            formatter_class=RawTextHelpFormatter)
+    parser_valgrind.add_argument('run_target',
+                            help=f'A python/cython module path (must be relative to project root!)\n'
+                                 f'Examples:\n'
+                                 f'package/sub_package/module.py - starts __main__ in Python module\n'
+                                 f'package.sub_package.module - starts __main__ in Python module\n'
+                                 f'package/sub_package/cy_module.pyx@main - starts main() in Cython module, entry point is mandatory\n'
+                                 f'package.sub_package.cy_module@main - starts main() in Cython module, entry point is mandatory\n'
+                            )
+    parser_valgrind.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_valgrind.add_argument('--pytest', '-t', action='store_true', help='Run module as in pytest')
+    parser_valgrind.set_defaults(func=cython_tools.debugger.valgrind_command)
 
     #
     # `run` command arguments
@@ -122,6 +139,22 @@ def main(argv=None):
                             )
     parser_run.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_run.set_defaults(func=cython_tools.debugger.run_command)
+
+    #
+    # `tests` command arguments
+    #
+    parser_tests = subparsers.add_parser('tests',
+                                         description='Runs all or selected tests by file or directory path',
+                                         formatter_class=RawTextHelpFormatter)
+    parser_tests.add_argument('tests_target',
+                              help=f'A python/cython module path or directory (only python entry points!)\n'
+                                   f'Examples:\n'
+                                   f'. - runs all tests in current directory\n'
+                                   f'mymodule/tests - runs all tests `mymodule/tests` directory\n'
+                                   f'package/test/test_module.py - starts tests in a specific module\n'
+                              )
+    parser_tests.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_tests.set_defaults(func=cython_tools.testing.tests_command)
 
     #
     # `clean` command arguments

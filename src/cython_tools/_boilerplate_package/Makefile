@@ -16,36 +16,34 @@ PY_EXEC:=python
 TEST_EXEC:=pytest
 
 
-.PHONY: build build-debug tests coverage annotate debug-file debug-tests debug-valgrind run clean
+.PHONY: build-production build-debug tests tests-debug tests-valgrind run debug lprun-file annotate annotate-file coverage clean
 
-build:
+build-production:
 	$(CYTOOL) build
 
 build-debug:
 	$(CYTOOL) build --debug --annotate
 
 tests: build-debug
-	export PYTHONPATH=$(PROJ_ROOT):$(PYTHONPATH); python -m $(TEST_EXEC) --override-ini=cache_dir=$(PROJ_ROOT)/.cython_tools/.pytest_cache $(p)
+	$(CYTOOL) tests $(p)
 
-run:
-	$(CYTOOL) run cy_tools_samples/cy_memory_unsafe.pyx@main
+tests-valgrind: build-debug
+	$(CYTOOL) valgrind -t $(p)
 
-debug: build-debug
-	$(CYTOOL) debug cy_tools_samples/low_level/arrays_resize.pyx@main
-
-debug-tests: build-debug
+tests-debug: build-debug
 	$(CYTOOL) debug -t $(p)
 
-debug-file: build-debug
-	#$(CYTOOL) run cy_tools_samples/debugging/abort.pyx@main
-	#$(CYTOOL) debug cy_tools_samples/debugging/segfault.pyx@main
-	$(CYTOOL) debug cy_tools_samples/debugging/abort.pyx@main --cygdb-verbosity=4
+run: build-debug
+	$(CYTOOL) run $(p)
+
+debug: build-debug
+	$(CYTOOL) debug $(p)
 
 lprun-file: build-debug
 	$(CYTOOL) lprun cy_tools_samples/profiler/cy_module.pyx@approx_pi2"(10)" -m cy_tools_samples/profiler/cy_module.pyx
 
 annotate-file: build-debug
-	$(CYTOOL) annotate cy_tools_samples/low_level/dynamic_memory.pyx --browser
+	$(CYTOOL) annotate $(p) --browser
 
 coverage: build-debug
 	$(CYTOOL) cover . --browser
