@@ -121,6 +121,8 @@ def main(argv=None):
                             )
     parser_valgrind.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_valgrind.add_argument('--pytest', '-t', action='store_true', help='Run module as in pytest')
+    parser_valgrind.add_argument('--no-filter', '-n', action='store_false', help='Include all functions calls in call stacks')
+    parser_valgrind.add_argument('--no-replace', '-r', action='store_false', help='Don\'t replace Cython raw c-functions names by mapping pyx code')
     parser_valgrind.set_defaults(func=cython_tools.debugger.valgrind_command)
 
     #

@@ -16,12 +16,17 @@ def valgrind_command(args):
     valgrind(run_target=args.run_target,
              project_root=args.project_root,
              pytest=args.pytest,
+             filter_cython=args.no_filter,
+             replace_cython=args.no_replace,
         )
 
 
 def valgrind(run_target,
              project_root=None,
-             pytest = False):
+             pytest = False,
+             filter_cython=True,
+             replace_cython=True,
+             ):
     log.debug(f'Running: {run_target}')
 
     # Check if cython tools in a good state in the project root
@@ -89,13 +94,13 @@ def valgrind(run_target,
         if not os.path.exists(valgrind_log_fn):
             raise RuntimeError(f'No valgrind log found at {os.path.join(cython_tools_path, "valgrind.log")}')
 
-        result = parse_valgrind_logs(cython_tools_path, valgrind_log_fn)
+        result = parse_valgrind_logs(cython_tools_path, valgrind_log_fn, replace_cython, filter_cython)
         for l in result:
             print(l, end='')
     else:
         log.error("Failed to run valgrind!")
 
-def parse_valgrind_logs(cython_tools_path, valgrind_log_fn):
+def parse_valgrind_logs(cython_tools_path, valgrind_log_fn, replace_cython, filter_cython_only):
     """
     Parses valgrind logs and maps Cython .c calls to .pyx functions (also filters all python junk)
     """
@@ -104,7 +109,8 @@ def parse_valgrind_logs(cython_tools_path, valgrind_log_fn):
     with open(valgrind_log_fn, 'r') as fh:
         lines = fh.readlines()
 
-    RE_CYTHON_LINE = re.compile(r"(?P<base>==\d+==.*0x[A-Z0-9]+:*.)(?P<fn_name>__pyx_.*) \((?P<c_file>.*\.c):(?P<c_line>\d+)\)")
+    RE_CYTHON_LINE = re.compile(r"(?P<base>==\d+==.*0x[A-Z0-9]+:.*)(?P<fn_name>__pyx_.*) \((?P<c_file>.*\.c):(?P<c_line>\d+)\)")
+    RE_FUNC_CALL_LINE = re.compile(r"(?P<base>==\d+==.*0x[A-Z0-9]+:.*)(?P<fn_name>.*) \((?P<c_file>.*):(?P<c_line>\d+)\)")
     RE_NEW_REC = re.compile(r"==\d+== \n")
     RE_REPORT_START = re.compile(r"==\d+== Parent PID:.*\n")
     RE_LEAK_SUMMARY = re.compile(r"==\d+== LEAK SUMMARY:\n")
@@ -117,7 +123,7 @@ def parse_valgrind_logs(cython_tools_path, valgrind_log_fn):
     def replace_cython_calls(lines, l_start, l_end):
         for i in range(l_start, l_end):
             g = RE_CYTHON_LINE.match(lines[i])
-            if g:
+            if replace_cython and g:
                 c_file = g['c_file']
                 fn_name = g['fn_name']
                 c_line_no = int(g['c_line'])
@@ -129,10 +135,10 @@ def parse_valgrind_logs(cython_tools_path, valgrind_log_fn):
                     pyx_line_number = module_map['line_numbers'].get(c_line_no, _pyx_fn_line_no)
 
                     result_lines.append(re.sub(RE_CYTHON_LINE, rf"\g<base>{_qual_name} ({pyx_base_name}:{pyx_line_number})", lines[i]))
-
             else:
-                # Not a cython line return as is
-                result_lines.append(lines[i])
+                # Skipp all non Cython functions calls, keep only informational messages
+                if not filter_cython_only or RE_FUNC_CALL_LINE.match(lines[i]) is None:
+                    result_lines.append(lines[i])
 
     for i, l in enumerate(lines):
         if last_rec == -1:
