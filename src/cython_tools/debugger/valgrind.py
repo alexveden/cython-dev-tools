@@ -104,14 +104,14 @@ def parse_valgrind_logs(cython_tools_path, valgrind_log_fn):
     with open(valgrind_log_fn, 'r') as fh:
         lines = fh.readlines()
 
-    RE_CYTHON_LINE = re.compile(r"(?P<base>==\d+== +by +0x[A-Z0-9]+:*.)(?P<fn_name>__pyx_.*) \((?P<c_file>.*\.c):(?P<c_line>\d+)\)")
+    RE_CYTHON_LINE = re.compile(r"(?P<base>==\d+==.*0x[A-Z0-9]+:*.)(?P<fn_name>__pyx_.*) \((?P<c_file>.*\.c):(?P<c_line>\d+)\)")
     RE_NEW_REC = re.compile(r"==\d+== \n")
-    RE_HEAP_SUMMARY = re.compile(r"==\d+== HEAP SUMMARY:\n")
+    RE_REPORT_START = re.compile(r"==\d+== Parent PID:.*\n")
     RE_LEAK_SUMMARY = re.compile(r"==\d+== LEAK SUMMARY:\n")
 
     result_lines = []
     last_rec = -1
-    heap_summary_passed = False
+    report_started = False
     has_cython_calls = False
 
     def replace_cython_calls(lines, l_start, l_end):
@@ -138,11 +138,11 @@ def parse_valgrind_logs(cython_tools_path, valgrind_log_fn):
         if last_rec == -1:
             result_lines.append(l)
 
-        if not heap_summary_passed:
-            if RE_HEAP_SUMMARY.match(l):
-                heap_summary_passed = True
+        if not report_started:
+            if RE_REPORT_START.match(l):
+                report_started = True
 
-        if last_rec == -1 and heap_summary_passed and RE_NEW_REC.match(l):
+        if last_rec == -1 and report_started and RE_NEW_REC.match(l):
             # First valgrind record found
             last_rec = i
             continue
