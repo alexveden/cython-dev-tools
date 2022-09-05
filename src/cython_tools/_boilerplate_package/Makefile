@@ -46,10 +46,10 @@ annotate-file: build-debug
 	$(CYTOOL) annotate $(p) --browser
 
 coverage: build-debug
-	$(CYTOOL) cover . --browser
+	$(CYTOOL) cover $(p) --browser
 
 annotate: build-debug
-	$(CYTOOL) annotate . --browser
+	$(CYTOOL) annotate $(p) --browser
 
 clean:
 	$(CYTOOL) clean -y -b

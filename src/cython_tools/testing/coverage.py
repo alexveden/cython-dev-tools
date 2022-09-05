@@ -36,8 +36,6 @@ def coverage(tests_target: str = '.',
 
     if not os.path.exists(tests_path):
         raise FileNotFoundError(f'tests_target = {tests_path} not exists')
-    if not os.path.isdir(tests_path):
-        raise NotADirectoryError(f'tests_target = must be a directory, got {tests_path}')
 
     try:
         from coverage.cmdline import main as coverage_main
