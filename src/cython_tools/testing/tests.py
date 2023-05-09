@@ -11,12 +11,19 @@ def tests_command(args):
     log.setup('cython_tools__tests', verbosity=args.verbose)
 
     tests(tests_target=args.tests_target,
+          quiet=args.quiet,
+          last_failed=args.lf,
+          disable_warnings=args.disable_warnings,
           project_root=args.project_root,
           )
 
 
 def tests(tests_target,
-          project_root=None):
+          project_root=None,
+          quiet=False,
+          last_failed=False,
+          disable_warnings=False,
+          ):
     log.debug(f'Running: {tests_target}')
     # Check if cython tools in a good state in the project root
     project_root, cython_tools_path = check_project_initialized(project_root)
@@ -39,6 +46,14 @@ def tests(tests_target,
 
     # Get rid of annoying ".pytest_cache" folder in the root dir!
     run_instruct.insert(-1, f'--override-ini=cache_dir={os.path.join(cython_tools_path, ".pytest_cache")}')
+    if last_failed:
+        run_instruct.insert(-1, '--lf')
+    
+    if disable_warnings:
+        run_instruct.insert(-1, '--disable-warnings')
+
+    if quiet:
+        run_instruct.insert(-1, '-q')
 
     log.trace(f'Python args: {run_instruct}')
 

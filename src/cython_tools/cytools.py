@@ -156,6 +156,9 @@ def main(argv=None):
                                    f'package/test/test_module.py - starts tests in a specific module\n'
                               )
     parser_tests.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_tests.add_argument('--quiet', '-q', action='store_true', help=f'Reduces test suite verbosity to minimum')
+    parser_tests.add_argument('--disable-warnings', '-w', action='store_true', help=f'Ignore all warnings')
+    parser_tests.add_argument('--lf', '-l', action='store_true', help=f'Run only last failed')
     parser_tests.set_defaults(func=cython_tools.testing.tests_command)
 
     #
