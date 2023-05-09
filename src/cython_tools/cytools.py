@@ -209,6 +209,18 @@ def main(argv=None):
 
     parser_lprun.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_lprun.set_defaults(func=cython_tools.testing.lprun_command)
+    
+    #
+    # `template` command arguments
+    #
+    parser_template = subparsers.add_parser('template',
+                                              description='Creates template Cython class/module with tests')
+    parser_template.add_argument('module_full_package', help='New module path from project root, i.e. mypackage.subpackage.my_new_module')
+    parser_template.add_argument('--project_root', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
+    parser_template.add_argument('--template-type', '-t', help=f'Template type: class|module')
+    parser_template.add_argument('--include-tests', '-i', help='Makes test files inside new module dir', type=bool)
+    parser_template.add_argument('--log-name', help='custom log name', default='cython_tools__template')
+    parser_template.set_defaults(func=cython_tools.maintenance.template_command)
 
     args = parser.parse_args(argv)
     if (argv is None and len(sys.argv) == 1) or 'func' not in args:

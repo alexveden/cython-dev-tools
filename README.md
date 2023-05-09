@@ -189,3 +189,14 @@ Cleanup all compilation junk
 # cytool clean --help
 cytool clean
 ```
+
+## Templates
+Creates Cython cdef module or class using boilerplate templates relative to project root.
+Optionally it can include tests in new package directory.
+
+```
+# For more help
+# cytool template --help
+cytool template subpkg.my_template
+```
+
