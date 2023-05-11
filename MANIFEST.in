@@ -1,0 +1,8 @@
+# added by check-manifest
+recursive-include src *.c
+recursive-include src *.h
+recursive-include src *.pxd
+recursive-include src *.pyx
+recursive-include src Makefile
+recursive-include tests *.py
+recursive-include tests *.pyx
