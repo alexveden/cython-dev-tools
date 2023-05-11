@@ -74,7 +74,7 @@ def build(project_root: str = None,
                       define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
                       include_dirs= [project_root, np.get_include()],
                       #library_dirs=[lib_directory],
-                      #extra_link_args=[f"-Wl,-rpath={lib_directory}"],
+                      extra_compile_args=["-Wno-unused-variable", '-Wno-unused-function'],
                       ),
         ]
         cythonize_kwargs = dict(
