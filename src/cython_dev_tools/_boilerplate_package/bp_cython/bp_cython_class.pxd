@@ -7,3 +7,6 @@ cdef class SomeCythonClass:
     @staticmethod
     cdef int add(int a, int b)
 
+    cdef double random_next(self)
+    cdef double volume(self, double h)
+

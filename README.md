@@ -1,4 +1,4 @@
-# Cython Tools: toolkit for efficient Cython development
+# Cython Dev Tools: toolkit for efficient Cython development
 
 ## Key features
 - Keeping all development tools in one place with minimal efforts
@@ -9,6 +9,7 @@
 - Cython annotations and index file for all project
 - Cython project boilerplate
 - Cython snippets for low-level C-code and debugging tricks
+- Makefile for running command shortcuts, also don't let you forget to build changed files (for example `make test`, `make test-debug p=path/to_test.py`)
 
 ## Requirements
 - Python 3.6+ (including debug version for CyGDB)
@@ -106,11 +107,11 @@ cytool debug --help
 Check the `cy_tools_samples/debugging/` for more tricks on how to set breakpoints,
 c-style (not python!) asserts and debug them.
 
-### Debugging the debugger
-This functionality is still under development, so expect bugs everywhere.
+### Troubleshooting the debugger
+This functionality is still under development, so expect bugs everywhere. However, there are some
+common issues with the Cython debugger: 
 
-However, this is a hit list:
-1. Make sure that you are using debug version of python
+1. Make sure that you are using **debug** version of python
 2. Make sure that the current build is debug, try to force rebuild
 ```
 cytool build --debug --force
@@ -120,6 +121,39 @@ cytool build --debug --force
 cytool -vvvv debug cy_tools_samples/debugging/abort.pyx@main --cygdb-verbosity=3
 ```
 4. Don't hesitate to fill an issue on GitHub!
+
+## Unit Testing
+Running unit tests on Cython low-level cdef functions or even classes is also possible task, but requires some 
+code preparation.
+To run unit tests on low-level code you must do the following steps:
+1. Implement unit test class in `test_cython_.pyx` file:
+```python
+import unittest
+# cdef-classes require cimport and .pxd file!
+from bp_cython.bp_cython_class cimport SomeCythonClass
+
+class CythonTestCase(unittest.TestCase):
+    # IMPORTANT: in some reason, NoseTest doesn't recognize this module as a test
+    def test_cytoolzz_class_init(self):
+        cdef double * ptr = NULL # You can also use all low-level C-like stuff
+        c = SomeCythonClass(4, 3)
+        # c.square() is cdef method and not accessible via Python
+        self.assertEqual(12, c.square())  
+```
+2. Implement python file which includes `test_cython_.pyx` (don't use `pyximport`!) But it's literally 1 line!
+```python
+from my_proj.tests.test_cython_ import *
+```
+3. Re-build project in debug mode and run test suite. Only `pytest` works for me, BUT you still have to write `unittest.TestCase` classes, 
+`pytest` fancy fixtures are not supported for Cython tests.
+```
+> cytool build --debug 
+> cytool tests .
+
+# Or alternatively via make (no extra build step required)
+> make tests
+```
+[See Cython code with tests examples](https://github.com/alexveden/cython-dev-tools/tree/main/src/cython_dev_tools/_boilerplate_package/bp_cython)
 
 ## Code coverage
 Install the boilerplate project `cytool initialize --include-boilerplate`, this package
