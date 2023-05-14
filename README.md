@@ -4,6 +4,7 @@
 - Keeping all development tools in one place with minimal efforts
 - Built-in Cython debugger (including low-level cdef / C code, based on GDB)
 - Cython code unit testing with coverage reports
+- Cython code unit test with cdef class mocks / side-effects
 - Line-profiler
 - Easy running .pyx files by entry-point functions
 - Cython annotations and index file for all project
@@ -154,6 +155,13 @@ from my_proj.tests.test_cython_ import *
 > make tests
 ```
 [See Cython code with tests examples](https://github.com/alexveden/cython-dev-tools/tree/main/src/cython_dev_tools/_boilerplate_package/bp_cython)
+
+## Unit Test Mocks for Cython cdef classes 
+Sometimes it's crucial to have fast cdef code, but occasionally it could have undetermined functions like random or datetime.now(), so I found an approach
+for implementing unit test mocks for Cython class methods. Unfortunately it's not so elegant as Python one, and require implementing special class. But in 
+some cases it's better than nothing.
+
+[Cython UnitTest Mocks example](https://github.com/alexveden/cython-dev-tools/tree/main/src/cython_dev_tools/_boilerplate_package/bp_cython/tests/test_bp_cython_class_mock_.pyx)
 
 ## Code coverage
 Install the boilerplate project `cytool initialize --include-boilerplate`, this package
