@@ -3,15 +3,15 @@ from Cython.Build import cythonize
 import numpy as np
 import os
 IS_DEBUG = os.getenv('CYTHON_TOOLS_BUILD_DEBUG', False)
-CYTHON_TOOLS_DIRNAME = os.getenv("CYTHON_TOOLS_DIRNAME", '.cython_tools')
+CYTHON_TOOLS_DIRNAME = os.getenv("CYTHON_TOOLS_DIRNAME", '.cython_dev_tools')
 
 debug_macros = []
 debug_cythonize_kw = dict(force=True)
 debug_include_path = []
 
 if IS_DEBUG:
-    cython_tools_dir = gdb_out_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), CYTHON_TOOLS_DIRNAME)
-    if not os.path.exists(cython_tools_dir):
+    cython_dev_tools_dir = gdb_out_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), CYTHON_TOOLS_DIRNAME)
+    if not os.path.exists(cython_dev_tools_dir):
         print(f'{CYTHON_TOOLS_DIRNAME} doesn\'t exist in current project root, missing configuration?!')
         gdb_out_dir = os.getcwd()
     print('Extension IS_DEBUG=True!')

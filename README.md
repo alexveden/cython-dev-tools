@@ -17,7 +17,7 @@
 
 ## Getting started
 ```bash
-pip install cython-tools
+pip install cython-dev-tools
 
 # Create a new directory for a project
 mkdir init_project
@@ -31,7 +31,7 @@ cytool initialize . --include-samples --include-boilerplate --boilerplate-name=c
 ```
 
 ## Initialize command
-Cython tools require each project root to be initialized, the folder `.cython_tools` 
+Cython tools require each project root to be initialized, the folder `.cython_dev_tools` 
 will be created at the project root. There you can find all temporary files, like annotations,
 coverage data, debug files, etc.
 

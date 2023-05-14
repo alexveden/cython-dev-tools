@@ -5,13 +5,13 @@ import sys
 import tempfile
 import textwrap
 from .gbd.gdb_command_template import GDB_TEMPLATE
-from cython_tools.logs import log
+from cython_dev_tools.logs import log
 from ..common import check_project_initialized, check_method_exists, find_package_path, make_run_args
 import re
 
 
 def debug_command(args):
-    log.setup('cython_tools__debugger', verbosity=args.verbose)
+    log.setup('cython_dev_tools__debugger', verbosity=args.verbose)
 
     debug(debug_target=args.debug_target,
           project_root=args.project_root,
@@ -28,9 +28,9 @@ def debug(
         ):
 
     # Check if cython tools in a good state in the project root
-    project_root, cython_tools_path = check_project_initialized(project_root)
+    project_root, cython_dev_tools_path = check_project_initialized(project_root)
 
-    tempfilename = make_command_file(debug_target, project_root, cython_tools_path, cygdb_verbosity, breakpoints_list or [], pytest)
+    tempfilename = make_command_file(debug_target, project_root, cython_dev_tools_path, cygdb_verbosity, breakpoints_list or [], pytest)
 
     with open(tempfilename) as tempfile:
         p = subprocess.Popen(['gdb', '-command', tempfilename])
@@ -100,7 +100,7 @@ def validate_breakpoint(project_root, break_point_definition: str):
         raise NotImplementedError(f'Unsupported breakpoint type :{type(break_point)} -> {break_point}')
 
 
-def make_command_file(debug_target, project_root, cython_tools_path, cygdb_verbosity, break_points_list, pytest):
+def make_command_file(debug_target, project_root, cython_dev_tools_path, cygdb_verbosity, break_points_list, pytest):
     log.trace(f'Preparing GDB debug command file')
 
     if debug_target.count('@') > 1:
@@ -138,18 +138,18 @@ def make_command_file(debug_target, project_root, cython_tools_path, cygdb_verbo
     run_instruct = ' '.join(make_run_args(source_file, package, entry_method, escape=True, pytest=pytest))
 
 
-    pattern = os.path.join(cython_tools_path,
+    pattern = os.path.join(cython_dev_tools_path,
                            'cython_debug',
                            'cython_debug_info_*')
     debug_files = glob.glob(pattern)
 
     if not debug_files:
-        sys.exit(f'No debug files were found in `{os.path.abspath(cython_tools_path)}/cython_debug`. Aborting.')
+        sys.exit(f'No debug files were found in `{os.path.abspath(cython_dev_tools_path)}/cython_debug`. Aborting.')
 
     fd, tempfilename = tempfile.mkstemp()
     f = os.fdopen(fd, 'w')
     try:
-        path = os.path.join(cython_tools_path, "cython_debug", "interpreter")
+        path = os.path.join(cython_dev_tools_path, "cython_debug", "interpreter")
 
         with open(path) as interpreter_file:
             interpreter = interpreter_file.read()
@@ -157,8 +157,8 @@ def make_command_file(debug_target, project_root, cython_tools_path, cygdb_verbo
         cy_debug_interpreter = f"file {interpreter}"
         cy_debug_imports = '\n'.join(f'cy import {fn}\n' for fn in debug_files)
         cy_extra_gdbinit_list = []
-        if os.path.exists(os.path.join(cython_tools_path, '.cygdbinit')):
-            cy_extra_gdbinit_list.append(os.path.join(cython_tools_path, '.cygdbinit'))
+        if os.path.exists(os.path.join(cython_dev_tools_path, '.cygdbinit')):
+            cy_extra_gdbinit_list.append(os.path.join(cython_dev_tools_path, '.cygdbinit'))
 
         if os.path.exists(os.path.join(project_root, '.cygdbinit')):
             cy_extra_gdbinit_list.append(os.path.join(project_root, '.cygdbinit'))

@@ -2,17 +2,17 @@ import glob
 import os.path
 import shutil
 import sys
-from cython_tools.logs import log
-from cython_tools.common import check_project_initialized, parse_input
-from cython_tools.settings import CYTHON_TOOLS_DIRNAME
-from cython_tools.building.build import RE_IS_CYTHON
+from cython_dev_tools.logs import log
+from cython_dev_tools.common import check_project_initialized, parse_input
+from cython_dev_tools.settings import CYTHON_TOOLS_DIRNAME
+from cython_dev_tools.building.build import RE_IS_CYTHON
 
 
 def clean_command(args):
     """
     Main entry point for shell command
     """
-    log.setup('cython_tools__clean', verbosity=args.verbose)
+    log.setup('cython_dev_tools__clean', verbosity=args.verbose)
 
     clean(
             project_root=args.project_root,
@@ -34,7 +34,7 @@ def clean(project_root: str = None,
     """
 
     # Check if cython tools in a good state in the project root
-    project_root, cython_tools_path = check_project_initialized(project_root)
+    project_root, cython_dev_tools_path = check_project_initialized(project_root)
     log.info(f'Starting annotation at {project_root}')
 
     if sys.platform == 'win32':

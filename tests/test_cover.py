@@ -1,5 +1,5 @@
 import unittest
-from cython_tools.testing import coverage
+from cython_dev_tools.testing import coverage
 
 
 class CoverTestCase(unittest.TestCase):

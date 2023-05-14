@@ -65,8 +65,8 @@ if hasattr(gdb, 'string_to_argv'):
 else:
     from shlex import split as string_to_argv
 
-from cython_tools.debugger.gbd import libpython
-from cython_tools.debugger.gbd.libpython import TRACE, DEBUG_TRACE
+from cython_dev_tools.debugger.gbd import libpython
+from cython_dev_tools.debugger.gbd.libpython import TRACE, DEBUG_TRACE
 
 
 # C or Python type
@@ -89,7 +89,7 @@ def get_cython_wrappers(src_file):
     """
     wrapper_map = {}
     if not os.path.exists(src_file):
-        TRACE(f'No source file: {src_file} or abandoned files in .cython_tools/cython_debug/ folder')
+        TRACE(f'No source file: {src_file} or abandoned files in .cython_dev_tools/cython_debug/ folder')
         return wrapper_map
 
     with open(src_file, 'r') as fh:

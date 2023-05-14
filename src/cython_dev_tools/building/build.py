@@ -2,8 +2,8 @@ import os
 import sys
 from typing import List
 
-from cython_tools.logs import log
-from cython_tools.common import check_project_initialized
+from cython_dev_tools.logs import log
+from cython_dev_tools.common import check_project_initialized
 from setuptools import Extension, setup
 import numpy as np
 from Cython.Build import cythonize
@@ -24,7 +24,7 @@ def build_command(args):
     """
     Main entry point for shell command
     """
-    log.setup('cython_tools__build', verbosity=args.verbose)
+    log.setup('cython_dev_tools__build', verbosity=args.verbose)
 
     build(args.project_root,
           is_debug=args.debug,
@@ -42,14 +42,14 @@ def build(project_root: str = None,
     log.trace(f'project root: {project_root}')
 
     # Check if cython tools in a good state in the project root
-    project_root, cython_tools_path = check_project_initialized(project_root)
+    project_root, cython_dev_tools_path = check_project_initialized(project_root)
 
     # Changing dir to project root
     prev_dir = os.path.abspath(os.getcwd())
     os.chdir(os.path.abspath(project_root))
     log.trace(os.getcwd())
 
-    lib_directory = os.path.join(cython_tools_path, "lib")
+    lib_directory = os.path.join(cython_dev_tools_path, "lib")
 
     if project_root not in sys.path:
         log.trace(f'Adding {project_root} to PYTHONPATH')
@@ -88,7 +88,7 @@ def build(project_root: str = None,
         debug_macros = ("CYTHON_TRACE_NOGIL", 1), ("CYTHON_TRACE", 1)
         debug_cythonize_kw = dict(gdb_debug=True,
                                   # cython_debug files output for GDB mapping
-                                  output_dir=cython_tools_path,
+                                  output_dir=cython_dev_tools_path,
                                   # TODO: decide if include path works
                                   include_path=cythonize_kwargs.get('include_path', []) + [project_root],
                                   compiler_directives={'linetrace': True, 'profile': True, 'binding': True})
@@ -131,7 +131,7 @@ def build(project_root: str = None,
     # Ready to compile
     log.debug('Compiling and building')
     log.trace(f'cythonize_kwargs: {cythonize_kwargs}')
-    src_build_dir = os.path.join(cython_tools_path, 'src')
+    src_build_dir = os.path.join(cython_dev_tools_path, 'src')
     os.makedirs(src_build_dir, exist_ok=True)
 
     cythonize_kwargs['force'] = force
@@ -193,8 +193,8 @@ def check_force_rebuild(project_root: str, ext_name: str, ext_sources: List[str]
     we change from debug to release and vice versa. But always forcing is also burdensome, because rebuilding whole project may be time consuming.
     """
     log.debug(f'check_force_rebuild: Check if extension: {ext_name} needs rebuild')
-    project_root, cython_tools_path = check_project_initialized(project_root)
-    src_build_dir = os.path.join(cython_tools_path, 'src')
+    project_root, cython_dev_tools_path = check_project_initialized(project_root)
+    src_build_dir = os.path.join(cython_dev_tools_path, 'src')
 
     for src_pattern in ext_sources:
         if not src_pattern.endswith('.pyx'):

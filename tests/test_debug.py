@@ -1,6 +1,6 @@
 import unittest
-from cython_tools.debugger import debug
-from cython_tools.debugger.debug import validate_breakpoint
+from cython_dev_tools.debugger import debug
+from cython_dev_tools.debugger.debug import validate_breakpoint
 import os
 
 class DebugTestCase(unittest.TestCase):

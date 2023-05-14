@@ -6,11 +6,11 @@ import glob
 import os.path
 import shutil
 import sys
-from cython_tools.logs import log
-from cython_tools.common import check_project_initialized, parse_input
-from cython_tools.settings import CYTHON_TOOLS_DIRNAME
-from cython_tools.building.build import RE_IS_CYTHON
-from cython_tools.building.initialize import RE_FILE_BP_CLASS, RE_FILE_BP_MODULE, RE_FILE_BP_TEST, RE_VALID_PY_EX
+from cython_dev_tools.logs import log
+from cython_dev_tools.common import check_project_initialized, parse_input
+from cython_dev_tools.settings import CYTHON_TOOLS_DIRNAME
+from cython_dev_tools.building.build import RE_IS_CYTHON
+from cython_dev_tools.building.initialize import RE_FILE_BP_CLASS, RE_FILE_BP_MODULE, RE_FILE_BP_TEST, RE_VALID_PY_EX
 import re
 
 RE_VALID_NAME = re.compile(r'^[A-Za-z_\d\.]+$', re.MULTILINE)
@@ -20,7 +20,7 @@ def template_command(args):
     """
     Main entry point for shell command
     """
-    log.setup('cython_tools__template', verbosity=args.verbose)
+    log.setup('cython_dev_tools__template', verbosity=args.verbose)
 
     template(
             project_root=args.project_root,
@@ -37,7 +37,7 @@ def template(module_full_package: str = None,
              project_root: str = None,
              ):
 
-    project_root, cython_tools_path = check_project_initialized(project_root)
+    project_root, cython_dev_tools_path = check_project_initialized(project_root)
 
     boiler_plate_root = 'bp_cython'
     boiler_plate_package_source = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', '_boilerplate_package', boiler_plate_root))

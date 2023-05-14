@@ -1,14 +1,14 @@
 import os
 import subprocess
 import sys
-from cython_tools.logs import log
-from cython_tools.common import check_project_initialized, check_method_exists, find_package_path, make_run_args
+from cython_dev_tools.logs import log
+from cython_dev_tools.common import check_project_initialized, check_method_exists, find_package_path, make_run_args
 import re
 import signal
 
 
 def tests_command(args):
-    log.setup('cython_tools__tests', verbosity=args.verbose)
+    log.setup('cython_dev_tools__tests', verbosity=args.verbose)
 
     tests(tests_target=args.tests_target,
           quiet=args.quiet,
@@ -26,7 +26,7 @@ def tests(tests_target,
           ):
     log.debug(f'Running: {tests_target}')
     # Check if cython tools in a good state in the project root
-    project_root, cython_tools_path = check_project_initialized(project_root)
+    project_root, cython_dev_tools_path = check_project_initialized(project_root)
 
     # Building python args
     tests_path = os.path.join(project_root, tests_target)
@@ -45,7 +45,7 @@ def tests(tests_target,
         run_instruct = ['-m', 'pytest', f'{tests_path}']
 
     # Get rid of annoying ".pytest_cache" folder in the root dir!
-    run_instruct.insert(-1, f'--override-ini=cache_dir={os.path.join(cython_tools_path, ".pytest_cache")}')
+    run_instruct.insert(-1, f'--override-ini=cache_dir={os.path.join(cython_dev_tools_path, ".pytest_cache")}')
     if last_failed:
         run_instruct.insert(-1, '--lf')
     

@@ -130,8 +130,8 @@ class Plugin(CoveragePlugin):
         # Read the regular expressions from the coverage config that match lines to be excluded from coverage.
         self._excluded_line_patterns = config.get_option("report:exclude_lines")
         #breakpoint()
-        self._cytools_project_root = config.get_option("cython_tools.testing.coverage_plugin:project_root")
-        self._cytools_project_src = config.get_option("cython_tools.testing.coverage_plugin:project_src")
+        self._cytools_project_root = config.get_option("cython_dev_tools.testing.coverage_plugin:project_root")
+        self._cytools_project_src = config.get_option("cython_dev_tools.testing.coverage_plugin:project_src")
 
         # print('*' * 100)
         # print(self._cytools_project_src)

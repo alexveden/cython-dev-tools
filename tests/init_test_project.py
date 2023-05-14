@@ -1,4 +1,4 @@
-from cython_tools.building import initialize, build
+from cython_dev_tools.building import initialize, build
 import shutil
 import os
 import sys
@@ -17,13 +17,13 @@ if __name__ == '__main__':
                boilerplate_name='cytoolzz',
                )
 
-    shutil.copy(os.path.join(os.path.dirname(__file__), '..', 'src', 'cython_tools', '_boilerplate_package', 'cytools_script.py'),
+    shutil.copy(os.path.join(os.path.dirname(__file__), '..', 'src', 'cython_dev_tools', '_boilerplate_package', 'cytools_script.py'),
                 os.path.join(proj_root, 'cytool'))
     subprocess.call(['chmod', '+x', os.path.join(proj_root, 'cytool')])
 
-    os.symlink(os.path.join(os.path.dirname(__file__), '..', 'src', 'cython_tools', '_cy_tools_samples'), os.path.join(proj_root, 'cy_tools_samples'))
+    os.symlink(os.path.join(os.path.dirname(__file__), '..', 'src', 'cython_dev_tools', '_cy_tools_samples'), os.path.join(proj_root, 'cy_tools_samples'))
 
     os.unlink(os.path.join(proj_root, 'Makefile'))
-    os.symlink(os.path.join(os.path.dirname(__file__), '..', 'src', 'cython_tools', '_boilerplate_package', 'Makefile'), os.path.join(proj_root, 'Makefile'))
+    os.symlink(os.path.join(os.path.dirname(__file__), '..', 'src', 'cython_dev_tools', '_boilerplate_package', 'Makefile'), os.path.join(proj_root, 'Makefile'))
 
     build(proj_root, is_debug=True, annotate=True)

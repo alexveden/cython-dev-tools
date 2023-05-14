@@ -1,6 +1,6 @@
 import os
 import unittest
-from cython_tools.common import *
+from cython_dev_tools.common import *
 
 class CyToolsCommonTestCase(unittest.TestCase):
     def test_find_entry_point(self):

@@ -2,9 +2,9 @@ import os
 import re
 from typing import List
 
-from cython_tools.settings import CYTHON_TOOLS_DIRNAME
+from cython_dev_tools.settings import CYTHON_TOOLS_DIRNAME
 import sys
-from cython_tools.logs import log
+from cython_dev_tools.logs import log
 
 
 RE_PY_FILE = re.compile(r"[A-Za-z\d\._\/\\]+\.py[x]?$", re.MULTILINE)

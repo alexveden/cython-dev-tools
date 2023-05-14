@@ -1,4 +1,4 @@
-from cython_tools.testing import coverage
+from cython_dev_tools.testing import coverage
 
 if __name__ == '__main__':
     coverage(tests_target='.',

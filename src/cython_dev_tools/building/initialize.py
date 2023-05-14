@@ -3,9 +3,9 @@ Initializes Cython project root
 """
 import os
 import shutil
-from cython_tools.logs import log
-from cython_tools.settings import CYTHON_TOOLS_DIRNAME
-from cython_tools.common import parse_input
+from cython_dev_tools.logs import log
+from cython_dev_tools.settings import CYTHON_TOOLS_DIRNAME
+from cython_dev_tools.common import parse_input
 import glob
 import re
 
@@ -21,7 +21,7 @@ def initialize_command(args):
     """
     Main entry point for shell command
     """
-    log.setup('cython_tools__initialize', verbosity=args.verbose)
+    log.setup('cython_dev_tools__initialize', verbosity=args.verbose)
     initialize(
             project_root=args.project_root,
             force=args.force,
@@ -38,7 +38,7 @@ def initialize(project_root: str,
                include_samples=False,
                include_boilerplate=False,
                boilerplate_name=None,
-               log_name='cython_tools__initialize',
+               log_name='cython_dev_tools__initialize',
                ):
     """
     `initialize` shell command initialization, also may be called via pure python

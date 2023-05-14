@@ -1,8 +1,8 @@
 import os
 import subprocess
 import sys
-from cython_tools.logs import log
-from cython_tools.common import check_project_initialized, check_method_exists, find_package_path, make_run_args
+from cython_dev_tools.logs import log
+from cython_dev_tools.common import check_project_initialized, check_method_exists, find_package_path, make_run_args
 import re
 import signal
 import xml.etree.ElementTree as ET
@@ -11,7 +11,7 @@ import glob
 
 
 def valgrind_command(args):
-    log.setup('cython_tools__valgrind', verbosity=args.verbose)
+    log.setup('cython_dev_tools__valgrind', verbosity=args.verbose)
 
     valgrind(run_target=args.run_target,
              project_root=args.project_root,
@@ -30,7 +30,7 @@ def valgrind(run_target,
     log.debug(f'Running: {run_target}')
 
     # Check if cython tools in a good state in the project root
-    project_root, cython_tools_path = check_project_initialized(project_root)
+    project_root, cython_dev_tools_path = check_project_initialized(project_root)
 
     # Building python args
     run_path = os.path.join(project_root, run_target)
@@ -46,7 +46,7 @@ def valgrind(run_target,
 
     if pytest:
         # Get rid of annoying ".pytest_cache" folder in the root dir!
-        run_instruct.insert(-1, f'--override-ini=cache_dir={os.path.join(cython_tools_path, ".pytest_cache")}')
+        run_instruct.insert(-1, f'--override-ini=cache_dir={os.path.join(cython_dev_tools_path, ".pytest_cache")}')
 
     log.trace(f'Python args: {run_instruct}')
 
@@ -59,7 +59,7 @@ def valgrind(run_target,
     # Suppressing valgrind errors
     my_env['PYTHONMALLOC'] = 'malloc'
 
-    valgrind_log_fn = os.path.join(cython_tools_path, 'valgrind.log')
+    valgrind_log_fn = os.path.join(cython_dev_tools_path, 'valgrind.log')
     if os.path.exists(valgrind_log_fn):
         os.unlink(valgrind_log_fn)
     p = subprocess.Popen(['valgrind',
@@ -92,19 +92,19 @@ def valgrind(run_target,
     if os.path.exists(valgrind_log_fn):
         # All good let's check
         if not os.path.exists(valgrind_log_fn):
-            raise RuntimeError(f'No valgrind log found at {os.path.join(cython_tools_path, "valgrind.log")}')
+            raise RuntimeError(f'No valgrind log found at {os.path.join(cython_dev_tools_path, "valgrind.log")}')
 
-        result = parse_valgrind_logs(cython_tools_path, valgrind_log_fn, replace_cython, filter_cython)
+        result = parse_valgrind_logs(cython_dev_tools_path, valgrind_log_fn, replace_cython, filter_cython)
         for l in result:
             print(l, end='')
     else:
         log.error("Failed to run valgrind!")
 
-def parse_valgrind_logs(cython_tools_path, valgrind_log_fn, replace_cython, filter_cython_only):
+def parse_valgrind_logs(cython_dev_tools_path, valgrind_log_fn, replace_cython, filter_cython_only):
     """
     Parses valgrind logs and maps Cython .c calls to .pyx functions (also filters all python junk)
     """
-    func_mapper = make_func_mapper(cython_tools_path)
+    func_mapper = make_func_mapper(cython_dev_tools_path)
 
     with open(valgrind_log_fn, 'r') as fh:
         lines = fh.readlines()
@@ -171,15 +171,15 @@ def parse_valgrind_logs(cython_tools_path, valgrind_log_fn, replace_cython, filt
                 result_lines.append(l)
     return result_lines
 
-def make_func_mapper(cython_tools_path) -> dict:
+def make_func_mapper(cython_dev_tools_path) -> dict:
     """
     Parses cython debug metadata to map c source lines and functions to pyx files/modules
     """
-    if not os.path.exists(os.path.join(cython_tools_path, 'cython_debug')):
-        raise RuntimeError(f'Cython debug info not found in {cython_tools_path}, missing build --debug?')
+    if not os.path.exists(os.path.join(cython_dev_tools_path, 'cython_debug')):
+        raise RuntimeError(f'Cython debug info not found in {cython_dev_tools_path}, missing build --debug?')
     func_mapper = {}
 
-    for fn in glob.glob(os.path.join(cython_tools_path, 'cython_debug', 'cython_debug_info_*')):
+    for fn in glob.glob(os.path.join(cython_dev_tools_path, 'cython_debug', 'cython_debug_info_*')):
         tree = ET.parse(fn)
         root = tree.getroot()
 
@@ -214,6 +214,6 @@ def make_func_mapper(cython_tools_path) -> dict:
                 fn_map[f] = module_map
 
     if len(func_mapper) == 0:
-        raise RuntimeError(f'Cython debug info not found in {cython_tools_path}, missing build --debug?')
+        raise RuntimeError(f'Cython debug info not found in {cython_dev_tools_path}, missing build --debug?')
 
     return func_mapper

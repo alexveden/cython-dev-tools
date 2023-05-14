@@ -1,5 +1,5 @@
 import unittest
-from cython_tools.building import build
+from cython_dev_tools.building import build
 
 class BuildTestCase(unittest.TestCase):
     def test_build(self):

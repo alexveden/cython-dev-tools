@@ -3,8 +3,8 @@ from string import Template
 # Template vars
 # project_root - typically project root path
 # cy_debug_interpreter - the python interpreter which was used for producing debug cython build
-#                        (typically content of .cython_tools/cython_debug/interpreter)
-# cy_debug_imports - cython debug information (all files form .cython_tools/cython_debug/cython_debug_info**)
+#                        (typically content of .cython_dev_tools/cython_debug/interpreter)
+# cy_debug_imports - cython debug information (all files form .cython_dev_tools/cython_debug/cython_debug_info**)
 # cy_extra_gdbinit - add extra gdb init files if available
 
 GDB_TEMPLATE = Template("""
@@ -32,7 +32,7 @@ print('CythonTools: initializing plugin')
 
 import sys
 import os
-sys.path.insert(0, '/home/ubertrader/cloud/code/cython_tools/src')
+sys.path.insert(0, '/home/ubertrader/cloud/code/cython_dev_tools/src')
 
 print('''CythonTools: adding to PYTHONPATH: ${project_root}''')
 sys.path.insert(0, '${project_root}')
@@ -56,7 +56,7 @@ try:
     import Cython
     print(f"CythonTools: Cython version: {Cython.__version__}")
     
-    from cython_tools.debugger.gbd import libcython, libpython
+    from cython_dev_tools.debugger.gbd import libcython, libpython
     
     if libpython.DEBUG_TRACE == 0:
         print('CythonTools: Debug tracing disabled')
@@ -87,7 +87,7 @@ end
 # Compiled debug metadata files
 $cy_debug_imports
 
-# Extra .cygdbinit files (by project root or .cython_tools)
+# Extra .cygdbinit files (by project root or .cython_dev_tools)
 $cy_extra_gdbinit
 
 # Optionally set initial breakpoints here

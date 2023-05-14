@@ -6,13 +6,13 @@ import sys
 import shutil
 from datetime import datetime
 import inspect
-import cython_tools.building
-from cython_tools.common import check_project_initialized, open_url_in_browser, find_package_path, check_method_args
-from cython_tools.logs import log
+import cython_dev_tools.building
+from cython_dev_tools.common import check_project_initialized, open_url_in_browser, find_package_path, check_method_args
+from cython_dev_tools.logs import log
 
 
 def lprun_command(args):
-    log.setup('cython_tools__lprun', verbosity=args.verbose)
+    log.setup('cython_dev_tools__lprun', verbosity=args.verbose)
 
     lprun(args.profile_target,
           functions=args.function,
@@ -61,7 +61,7 @@ def lprun(profile_target,
     __cytool_modules = modules or []
 
     # Check if cython tools in a good state in the project root
-    project_root, cython_tools_path = check_project_initialized(project_root)
+    project_root, cython_dev_tools_path = check_project_initialized(project_root)
     sys.path.insert(0, project_root)
     log.info(f'Starting coverage at {project_root}')
 

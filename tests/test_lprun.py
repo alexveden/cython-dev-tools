@@ -1,5 +1,5 @@
 import unittest
-from cython_tools.testing import lprun
+from cython_dev_tools.testing import lprun
 
 
 class LPRunTestCase(unittest.TestCase):

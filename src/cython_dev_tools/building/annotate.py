@@ -2,8 +2,8 @@ import os
 import shutil
 import sys
 from typing import Union, List
-from cython_tools.logs import log
-from cython_tools.common import check_project_initialized
+from cython_dev_tools.logs import log
+from cython_dev_tools.common import check_project_initialized
 from setuptools import Extension, setup
 import numpy as np
 from Cython.Build import cythonize
@@ -12,7 +12,7 @@ import glob
 from unittest import mock
 import io
 from .annotate_templates import TEMPLATE_PACKAGE, TEMPLATE_URL, TEMPLATE_ANNOTATE_INDEX
-from cython_tools.common import open_url_in_browser
+from cython_dev_tools.common import open_url_in_browser
 import webbrowser
 import subprocess
 
@@ -20,7 +20,7 @@ def annotate_command(args):
     """
     Main entry point for shell command
     """
-    log.setup('cython_tools__annotate', verbosity=args.verbose)
+    log.setup('cython_dev_tools__annotate', verbosity=args.verbose)
 
     annotate_idx_fn = annotate(
             args.annotate_target,
@@ -46,7 +46,7 @@ def annotate(
     """
 
     # Check if cython tools in a good state in the project root
-    project_root, cython_tools_path = check_project_initialized(project_root)
+    project_root, cython_dev_tools_path = check_project_initialized(project_root)
     log.info(f'Starting annotation at {project_root}')
 
     def get_pyx_html(fn):
@@ -72,7 +72,7 @@ def annotate(
             pyx_file_or_list = [_single_filename]
             is_singe_file = True
 
-    annotations_path = os.path.join(cython_tools_path, 'annotations')
+    annotations_path = os.path.join(cython_dev_tools_path, 'annotations')
     if not is_singe_file:
         # Cleanup annotations folder
         if not append:
@@ -85,7 +85,7 @@ def annotate(
 
     html_files = [get_pyx_html(fn) for fn in pyx_file_or_list]
 
-    annotation_index_path = os.path.join(cython_tools_path, 'annotation_index.html')
+    annotation_index_path = os.path.join(cython_dev_tools_path, 'annotation_index.html')
 
     for pyx_fn, html_fn in html_files:
         assert project_root in pyx_fn, f'{pyx_fn} does not belong to project root'
@@ -161,8 +161,8 @@ def build_package_links(pkg_path, relative_path, only_files = False):
 
 def build_annotation_index(annotation_index_path):
     log.debug(f'Building annotation index file in {annotation_index_path}')
-    cython_tools_path = os.path.dirname(annotation_index_path)
-    annotations_path = os.path.join(cython_tools_path, 'annotations')
+    cython_dev_tools_path = os.path.dirname(annotation_index_path)
+    annotations_path = os.path.join(cython_dev_tools_path, 'annotations')
 
     accordion_buff = io.StringIO()
     #

@@ -3,8 +3,8 @@ requires      = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cython-tools"
-version = "0.6.6"
+name = "cython-dev-tools"
+version = "0.6.7"
 description = "Cython development toolkit (debugger, profiler, coverage, unit tests)"
 readme = "README.md"
 authors = [{ name = "Alex Veden", email = "i@alexveden.com" }]
@@ -14,7 +14,7 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
 ]
-keywords = ["feed", "reader", "tutorial"]
+keywords = ["cython", "debugger", "profiler", "coverage", "unit tests"]
 dependencies = [
     "cython < 3.0.0",
     "numpy",
@@ -26,7 +26,7 @@ requires-python = ">=3.6"
 
 
 [project.urls]
-Homepage = "https://github.com/alexveden/cython-tools"
+Homepage = "https://github.com/alexveden/cython-dev-tools"
 
 [project.scripts]
-cytool = "cython_tools.cytools:main"
+cytool = "cython_dev_tools.cytools:main"

@@ -6,12 +6,12 @@ import os
 import sys
 from argparse import RawTextHelpFormatter
 
-import cython_tools.building
-import cython_tools.debugger
-import cython_tools.testing
-import cython_tools.maintenance
+import cython_dev_tools.building
+import cython_dev_tools.debugger
+import cython_dev_tools.testing
+import cython_dev_tools.maintenance
 
-from cython_tools.settings import CYTHON_TOOLS_DIRNAME
+from cython_dev_tools.settings import CYTHON_TOOLS_DIRNAME
 
 
 def main(argv=None):
@@ -32,8 +32,8 @@ def main(argv=None):
     parser_initialize.add_argument('--include-samples', '-s', action='store_true', help='Copy sample files for experimenting')
     parser_initialize.add_argument('--include-boilerplate', '-b', action='store_true', help='Make typical cython project')
     parser_initialize.add_argument('--boilerplate-name', '-n', help='Boilerplate package name')
-    parser_initialize.add_argument('--log-name', help='custom log name', default='cython_tools__initialize')
-    parser_initialize.set_defaults(func=cython_tools.building.initialize_command)
+    parser_initialize.add_argument('--log-name', help='custom log name', default='cython_dev_tools__initialize')
+    parser_initialize.set_defaults(func=cython_dev_tools.building.initialize_command)
 
     #
     # `build` command arguments
@@ -44,7 +44,7 @@ def main(argv=None):
     parser_build.add_argument('--debug', '-d', action='store_true', help='build debug version for coverage and GDB')
     parser_build.add_argument('--annotate', '-a', action='store_true', help='create HTML annotation file nearby .pyx')
     parser_build.add_argument('--force', '-f', action='store_true', help='force rebuilding all cython files')
-    parser_build.set_defaults(func=cython_tools.building.build_command)
+    parser_build.set_defaults(func=cython_dev_tools.building.build_command)
 
     #
     # `cover` command arguments
@@ -55,7 +55,7 @@ def main(argv=None):
     parser_cover.add_argument('--coverage-engine', help=f'Test runner package (pytest only tested so far)', default='pytest')
     parser_cover.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_cover.add_argument('--browser', '-b', action='store_true',  help='Open url in browser when coverage is ready')
-    parser_cover.set_defaults(func=cython_tools.testing.coverage_command)
+    parser_cover.set_defaults(func=cython_dev_tools.testing.coverage_command)
 
     #
     # `annotate` command arguments
@@ -70,7 +70,7 @@ def main(argv=None):
     parser_annotate.add_argument('--append', '-a', action='store_true', help='Instead of cleaning up previous annotation index, appends new to the structure')
     parser_annotate.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_annotate.add_argument('--browser', '-b', action='store_true',  help='Open url in browser when annotation is ready')
-    parser_annotate.set_defaults(func=cython_tools.building.annotate_command)
+    parser_annotate.set_defaults(func=cython_dev_tools.building.annotate_command)
 
     #
     # `debug` command arguments
@@ -103,7 +103,7 @@ def main(argv=None):
     parser_debug.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_debug.add_argument('--cygdb-verbosity', type=int, default=0,
                               help=f'Print more debug information when in GDB, integer [0, 4]. Typically only used to debug the debugger')
-    parser_debug.set_defaults(func=cython_tools.debugger.debug_command)
+    parser_debug.set_defaults(func=cython_dev_tools.debugger.debug_command)
 
     #
     # `valgrind` command arguments
@@ -123,7 +123,7 @@ def main(argv=None):
     parser_valgrind.add_argument('--pytest', '-t', action='store_true', help='Run module as in pytest')
     parser_valgrind.add_argument('--no-filter', '-n', action='store_false', help='Include all functions calls in call stacks')
     parser_valgrind.add_argument('--no-replace', '-r', action='store_false', help='Don\'t replace Cython raw c-functions names by mapping pyx code')
-    parser_valgrind.set_defaults(func=cython_tools.debugger.valgrind_command)
+    parser_valgrind.set_defaults(func=cython_dev_tools.debugger.valgrind_command)
 
     #
     # `run` command arguments
@@ -140,7 +140,7 @@ def main(argv=None):
                                  f'package.sub_package.cy_module@main - starts main() in Cython module, entry point is mandatory\n'
                             )
     parser_run.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
-    parser_run.set_defaults(func=cython_tools.debugger.run_command)
+    parser_run.set_defaults(func=cython_dev_tools.debugger.run_command)
 
     #
     # `tests` command arguments
@@ -159,7 +159,7 @@ def main(argv=None):
     parser_tests.add_argument('--quiet', '-q', action='store_true', help=f'Reduces test suite verbosity to minimum')
     parser_tests.add_argument('--disable-warnings', '-w', action='store_true', help=f'Ignore all warnings')
     parser_tests.add_argument('--lf', '-l', action='store_true', help=f'Run only last failed')
-    parser_tests.set_defaults(func=cython_tools.testing.tests_command)
+    parser_tests.set_defaults(func=cython_dev_tools.testing.tests_command)
 
     #
     # `clean` command arguments
@@ -173,7 +173,7 @@ def main(argv=None):
                                  help='Confirm deletion all files without prompt')
     parser_clean.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_clean.add_argument('--delete-build', '-b', action='store_true', help=f'deletes a build directory in project root')
-    parser_clean.set_defaults(func=cython_tools.maintenance.clean_command)
+    parser_clean.set_defaults(func=cython_dev_tools.maintenance.clean_command)
 
 
     #
@@ -211,7 +211,7 @@ def main(argv=None):
                               )
 
     parser_lprun.add_argument('--project-root', '-p', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
-    parser_lprun.set_defaults(func=cython_tools.testing.lprun_command)
+    parser_lprun.set_defaults(func=cython_dev_tools.testing.lprun_command)
     
     #
     # `template` command arguments
@@ -222,8 +222,8 @@ def main(argv=None):
     parser_template.add_argument('--project_root', help=f'A project root path and also `{CYTHON_TOOLS_DIRNAME}` working dir')
     parser_template.add_argument('--template-type', '-t', help=f'Template type: class|module')
     parser_template.add_argument('--include-tests', '-i', help='Makes test files inside new module dir', type=bool)
-    parser_template.add_argument('--log-name', help='custom log name', default='cython_tools__template')
-    parser_template.set_defaults(func=cython_tools.maintenance.template_command)
+    parser_template.add_argument('--log-name', help='custom log name', default='cython_dev_tools__template')
+    parser_template.set_defaults(func=cython_dev_tools.maintenance.template_command)
 
     args = parser.parse_args(argv)
     if (argv is None and len(sys.argv) == 1) or 'func' not in args:

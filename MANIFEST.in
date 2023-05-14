@@ -6,3 +6,4 @@ recursive-include src *.pyx
 recursive-include src Makefile
 recursive-include tests *.py
 recursive-include tests *.pyx
+exclude tests

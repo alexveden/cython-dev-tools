@@ -1,5 +1,5 @@
 import unittest
-from cython_tools.building import annotate
+from cython_dev_tools.building import annotate
 
 class AnnotateTestCase(unittest.TestCase):
     def test_annotate(self):
